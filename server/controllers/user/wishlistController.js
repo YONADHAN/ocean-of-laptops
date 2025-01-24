@@ -56,7 +56,7 @@ const get_wishlists = async (req, res) => {
 
 const remove_from_wishlist = async (req, res) => {
     try {
-        const { productId, userId } = req.body;
+        const {userId, productId  } = req.body;
         const existingProduct = await Wishlist.findOne({ userId});
         
         if(!existingProduct) {

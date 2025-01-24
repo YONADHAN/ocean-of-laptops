@@ -53,41 +53,33 @@ const ProductCard = ({ product, onProductClick }) => {
   const handleWishlistChange = async () => {
     try {
       const token = Cookies.get('access_token');
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+  
       const decoded = jwtDecode(token);
       const userId = decoded._id;
       const productId = product._id;
-      const response = await axiosInstance.post("/add_to_wishlist",{userId, productId});
+  
+      const endpoint = isWishlist ? "/remove_from_wishlist" : "/add_to_wishlist";
+      const successMessage = isWishlist 
+        ? "Removed from wishlist" 
+        : "Added to wishlist";
+  
+      const response = await axiosInstance.post(endpoint, { userId, productId });
+  
       if (response.status === 200) {
         setIsWishlist(!isWishlist);
-        toast.success("Added to wishlist");
-      } 
-    } catch (error) {
-      if (error.response) {
-        // Server responded with a status outside 2xx range
-        const { status, data } = error.response;
-        if (status === 404) {
-          toast.error("Product not found");
-        } else if (status === 401) {
-          toast.error("Please login to add to wishlist");
-        } else if (status === 400) {
-          toast.error(data.message);
-        } else {
-          toast.error("Error adding to wishlist");
-        }
-        console.error("Error adding to wishlist:", error);
-        
-        if (status === 500) {
-          toast.error("Internal server error");
-        }
-      } else {
-        
-        toast.error("Network error. Please try again later.");
+        toast.success(successMessage);
       }
-      console.error("Error adding to wishlist:", error);     
-     
+    } catch (error) {
+      const errorMessage = isWishlist 
+        ? "Error while removing from wishlist" 
+        : "Error adding to wishlist";
+      toast.error(error.response?.data?.message || errorMessage);
     }
-
-  }
+  };
+  
 
 
 

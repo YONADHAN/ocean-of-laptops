@@ -71,7 +71,8 @@ router.post("/cancel_product",verifyUser, OrderController.cancel_product);
 
 
 //wishlist
-router.post('/add_to_wishlist',verifyUser, WishlistController.add_to_wishlist)
+router.post('/add_to_wishlist',verifyUser, WishlistController.add_to_wishlist);
+router.post('/remove_from_wishlist',verifyUser, WishlistController.remove_from_wishlist);
 
 
 module.exports = router;

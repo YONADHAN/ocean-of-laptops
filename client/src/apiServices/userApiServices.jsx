@@ -69,4 +69,10 @@ const checkoutService = {
   checkout: (orderData) => axiosInstance.post('/checkout', orderData)
 }
 
-export { authService, productService, cartService, orderService ,checkoutService};
+//wishlist
+const wishlistService = {
+  addToWishlist: (userId, productId) => axiosInstance.post('/add_to_wishlist', {userId, productId}),
+  removeFromWishlist: (userId, productId) => axiosInstance.post('/remove_from_wishlist', {userId, productId})
+}
+
+export { authService, productService, cartService, orderService ,checkoutService ,wishlistService};
