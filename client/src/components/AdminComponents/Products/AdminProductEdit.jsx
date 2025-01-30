@@ -27,7 +27,7 @@ const ProductEdit = () => {
     weight: "",
     ports: "",
     regularPrice: "",
-    salePrice: "",
+    offer: "",
     quantity: "",
     description: "",
     category: "",
@@ -333,11 +333,11 @@ const ProductEdit = () => {
 
       isValid = false;
     }
-    if (!formData.salePrice || formData.salePrice < 0) {
-      if (formData.salePrice < 0) {
-        errors.salePrice = "Sale Price should be greater than 0";
+    if (!formData.offer || formData.offer < 0) {
+      if (formData.offer < 0 || formData.offer >100) {
+        errors.offer = "Offer should be greater than 0";
       } else {
-        errors.salePrice = "Sale Price is required";
+        errors.offer = "Offer is required";
       }
 
       isValid = false;
@@ -993,17 +993,17 @@ const ProductEdit = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Sale Price
+                  Offer Percentage
                 </label>
                 <input
                   type="number"
-                  name="salePrice"
-                  value={formData.salePrice}
+                  name="offer"
+                  value={formData.offer}
                   onChange={handleInputChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
-                {/* {error.salePrice ? (
-                  <div className="text-red-500">{error.salePrice}</div>
+                {/* {error.offer ? (
+                  <div className="text-red-500">{error.offer}</div>
                 ) : null} */}
               </div>
               <div>

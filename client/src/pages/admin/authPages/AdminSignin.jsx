@@ -92,7 +92,7 @@ const AdminSignin = () => {
         //   // path: '' 
         // });
         Cookies.set('access_token', accessToken, { 
-          expires: rememberMe ? 13 : 1,
+          expires:  1/96,
           secure: false, 
           sameSite: 'Strict', 
           // path: '' 
@@ -107,7 +107,7 @@ const AdminSignin = () => {
     } catch (error) {
       console.error("Sign-in error:", error);
       const errorMessage = 
-        // error?.response?.data?.message || 
+        error?.response?.data?.message || 
         // error.message || 
         "An error occurred during sign-in.";
       toast.error(errorMessage);

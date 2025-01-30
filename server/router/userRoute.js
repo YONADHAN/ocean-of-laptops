@@ -7,6 +7,10 @@ const OrderController = require('../controllers/user/orderController')
 const categoryController = require('../controllers/user/categoryController')
 const PasswordController  = require('../controllers/user/PasswordController');
 const WishlistController = require('../controllers/user/wishlistController');
+const WalletController = require('../controllers/user/walletController');
+const CouponController = require('../controllers/user/couponController');
+const PaymentController = require('../controllers/user/paymentController');
+const downloadInvoiceController = require('../controllers/user/downloadInvoiceController');
 const {verifyUser} = require("../middlewares/auth")
 
 // const sampleController = require('../controllers/user/sampleController')
@@ -26,14 +30,18 @@ router.post('/reset-password-from-signin',PasswordController.resetPasswordFromSi
 
 //ProductController
 router.get('/get_product_details/:id',verifyUser, ProductController.get_product_details);
-router.get('/get_category_id_from_name',verifyUser, categoryController.get_category_id_from_name)
-router.get('/get_products_by_category', verifyUser, ProductController.get_products_by_category)
 router.get('/get_products', verifyUser,ProductController.get_products)
-router.get('/get_category_list',verifyUser, categoryController.get_category_list)
 router.get("/get_all_products_paginated",verifyUser, ProductController.get_all_products_paginated);
 router.get("/get_filter_options",verifyUser,ProductController.get_filter_options);
 router.get('/filter_products',verifyUser, ProductController.filter_products);
 router.post('/get_quantity' ,verifyUser, ProductController.get_quantity)
+
+
+//CategoryController
+router.get('/get_category_id_from_name',verifyUser, categoryController.get_category_id_from_name)
+router.get('/get_products_by_category', verifyUser, ProductController.get_products_by_category)
+router.get('/get_category_list',verifyUser, categoryController.get_category_list)
+
 
 //address
 router.post("/address_add",verifyUser, authController.address_add);
@@ -63,16 +71,38 @@ router.post("/remove_from_cart", verifyUser, CartController.remove_from_cart);
 router.post('/checkout',verifyUser, CartController.processCheckout);
 router.get('/clear_cart',verifyUser, CartController.clear_cart);
 router.post('/refresh_cart',verifyUser, CartController.refresh_cart);
+
+
 //orders
 router.get("/order_history",verifyUser, OrderController.order_history);
 router.get("/get_order/:orderId",verifyUser, OrderController.get_order);
 router.get("/cancel_order/:orderId",verifyUser, OrderController.cancel_order);
 router.post("/cancel_product",verifyUser, OrderController.cancel_product);
+router.post('/return_product',verifyUser, OrderController.return_product);
+router.post('/get_order_id',verifyUser, OrderController.get_order_id)
+router.get('/get_tax_invoice/:orderId', verifyUser, downloadInvoiceController.downloadInvoice)
 
+//payment
+router.post('/create_razorpay_order', verifyUser, PaymentController.create_razorpay_order);
+router.post('/verify_razorpay_payment',verifyUser, PaymentController.verify_razorpay_payment);
+router.post('/retry_payment',verifyUser, PaymentController.retry_payment);
 
 //wishlist
 router.post('/add_to_wishlist',verifyUser, WishlistController.add_to_wishlist);
 router.post('/remove_from_wishlist',verifyUser, WishlistController.remove_from_wishlist);
+router.post('/check_if_in_wishlist',verifyUser, WishlistController.check_if_in_wishlist);
+router.post('/get_wishlists',verifyUser, WishlistController.get_wishlists)
 
+
+
+//Wallet 
+router.post('/get_wallet_history',verifyUser, WalletController.get_wallet_history);
+router.post('/add_to_wallet', verifyUser, WalletController.add_to_wallet);
+router.post('/wallet_balance', verifyUser, WalletController.wallet_balance);
+
+//Coupons
+router.post('/get_suitable_coupons',verifyUser, CouponController.get_suitable_coupons);
+router.post('/apply_coupon', verifyUser, CouponController.apply_coupon);
+router.post('/apply_coupon_ultimate', verifyUser, CouponController.apply_coupon_ultimate);
 
 module.exports = router;

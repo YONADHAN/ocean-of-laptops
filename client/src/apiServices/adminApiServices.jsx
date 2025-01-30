@@ -39,6 +39,7 @@ const productService = {
   toggleBlockProduct: (id) => axiosInstance.put(`/admin/toggle_block/${id}`),
   updateProduct: (productId, productSubmissionData) => axiosInstance.put(`/admin/update_product/${productId}`, productSubmissionData),
   getProductById: (productId) => axiosInstance.get(`/admin/get_product/${productId}`),
+  updateProductOffer: (productId, offer) => axiosInstance.post('/admin/update_product_offer', {productId, offer})
 };
 
 // Order Management Services

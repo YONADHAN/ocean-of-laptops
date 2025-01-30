@@ -3,97 +3,88 @@ const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
+const Wallet = require("../../models/walletSchema");
 const mongoose = require("mongoose");
 const { jwtDecode } = require("jwt-decode");
 const Cookies = require("js-cookie");
 
-
-
-const globalFieldUpdation = async (userId)=> {
+const globalFieldUpdation = async (userId) => {
   // console.log("globalfieldupdation is worked with userId: " + userId);
   try {
-    const cart = await Cart.findOne({userId: userId}).populate('items.productId');
+    const cart = await Cart.findOne({ userId: userId }).populate(
+      "items.productId"
+    );
     if (!cart) {
       console.log("cart not found from globalfieldupdation");
       return "cart not found";
     }
- 
 
     let totalRegularPrice = 0; // Sum of regular prices
     let totalSalesPrice = 0; // Sum of sales prices
-    let totalDiscount = 0; // Total discount applied    
+    let totalDiscount = 0; // Total discount applied
     let netTotal = 0; // Sales prices minus totalDiscount
 
-    if(cart.items.length == 0){
-      console.log("cart is empty from globalfieldupdation");      
+    if (cart.items.length == 0) {
+      console.log("cart is empty from globalfieldupdation");
       totalRegularPrice = 0;
       totalSalesPrice = 0;
       totalDiscount = 0;
       netTotal = 0;
     } else {
-      cart.items.forEach(item => {
-        if(item.productId.quantity > 0){
+      cart.items.forEach((item) => {
+        if (item.productId.quantity > 0) {
           totalRegularPrice += item.regularPrice * item.quantity;
-          totalSalesPrice += item.salePrice * item.quantity; 
-        }        
+          totalSalesPrice += item.salePrice * item.quantity;
+        }
       });
       totalDiscount = totalRegularPrice - totalSalesPrice;
       netTotal = totalSalesPrice;
+    }
 
-    } 
-    
     cart.totalRegularPrice = totalRegularPrice;
     cart.totalSalesPrice = totalSalesPrice;
     cart.totalDiscount = totalDiscount;
     cart.netTotal = netTotal;
 
-     //below will be changed
-     cart.subTotal = totalRegularPrice;
-     cart.globalTotal = totalSalesPrice;
-     cart.globalDiscount = totalDiscount;
-     cart.finalTotal = netTotal;     
+    //below will be changed
+    cart.subTotal = totalRegularPrice;
+    cart.globalTotal = totalSalesPrice;
+    cart.globalDiscount = totalDiscount;
+    cart.finalTotal = netTotal;
     await cart.save();
-
   } catch (error) {
     console.error("Error in globalFieldUpdation:", error);
     return null;
   }
-} 
-
-
-
+};
 
 const checkingBlockedProduct = async (userId) => {
-  console.log("checkingBlockedProduct is worked with userId: " + userId);  
-  
-    let cart = await Cart.findOne({ userId })
-    .populate({
-      path: "items.productId",
-      populate: {
-        path: "category"
-      }
-    });
-    if (!cart) {
-      console.log("cart not found from checkingBlockedProduct");
-      return "cart not found";
+  console.log("checkingBlockedProduct is worked with userId: " + userId);
+
+  let cart = await Cart.findOne({ userId }).populate({
+    path: "items.productId",
+    populate: {
+      path: "category",
+    },
+  });
+  if (!cart) {
+    console.log("cart not found from checkingBlockedProduct");
+    return "cart not found";
+  }
+  const removedItems = [];
+
+  const filteredItems = [];
+  cart.items.forEach((item) => {
+    if (!item.productId.isBlocked && !item.productId.category.isBlocked) {
+      filteredItems.push(item);
+    } else {
+      removedItems.push(item);
     }
-    const removedItems = [];
-    
-    const filteredItems = [];
-    cart.items.forEach(item => {     
-      if(!item.productId.isBlocked && !item.productId.category.isBlocked){
-        filteredItems.push(item);
-      }else {
-        removedItems.push(item);
-      }
-    })   
-    cart.items = filteredItems;
-    await cart.save();
-    return { success: true, removedItems, filteredItems };
-}
-
-
-
+  });
+  cart.items = filteredItems;
+  await cart.save();
+  return { success: true, removedItems, filteredItems };
+};
 
 const cartQuantityCheck = async (userId) => {
   const cart = await Cart.findOne({ userId: userId });
@@ -104,36 +95,44 @@ const cartQuantityCheck = async (userId) => {
     return { success: true, message: "Cart is empty" };
   }
   let totalQuantity = 0;
-  cart.items.forEach(item => {
+  cart.items.forEach((item) => {
     totalQuantity += item.quantity;
-    if(item.quantity === 0) {
+    if (item.quantity === 0) {
       const itemName = item.productName;
       const id = item.productId;
-      return { success: false, message: `Cannot use "${itemName}" . Item is not available.`, id: id,productName: itemName};
-      
+      return {
+        success: false,
+        message: `Cannot use "${itemName}" . Item is not available.`,
+        id: id,
+        productName: itemName,
+      };
     }
   });
   // if (totalQuantity > 100) {
   //   return { success: false, message: "Cart quantity exceeds the limit" };
   // }
-  return { success: true, message: "Cart quantity is within the limit", totalQuantity: totalQuantity};
-}
+  return {
+    success: true,
+    message: "Cart quantity is within the limit",
+    totalQuantity: totalQuantity,
+  };
+};
 
 const refresh_cart = async (req, res) => {
   try {
     const userId = req.body.userId;
     const blockedResult = await checkingBlockedProduct(userId);
     await globalFieldUpdation(userId);
-    res.json({ success: true, messages: "Cart refreshed successfully" , blockedProducts: blockedResult.removedItems, filteredItems: blockedResult.filteredItems });
+    res.json({
+      success: true,
+      messages: "Cart refreshed successfully",
+      blockedProducts: blockedResult.removedItems,
+      filteredItems: blockedResult.filteredItems,
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
-
-
-
 
 const add_to_cart = async (req, res) => {
   try {
@@ -150,19 +149,23 @@ const add_to_cart = async (req, res) => {
 
     const userId = decoded._id;
 
-    const product = await Product.findById(productId).populate('category');
+    const product = await Product.findById(productId).populate("category");
     if (!product) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
     }
-    if(product.isBlocked){
-      return res.status(400).json({ success: false, message: "Product is blocked by the admin" });
+    if (product.isBlocked) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Product is blocked by the admin" });
     }
-    if(product.category.isBlocked) {
-      return res.status(400).json({ success: false, message: "Category is blocked by the admin" });
+    if (product.category.isBlocked) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Category is blocked by the admin" });
     }
-  
+
     if (product.quantity < quantity) {
       return res
         .status(400)
@@ -233,14 +236,14 @@ const add_to_cart = async (req, res) => {
       // cart.items[existingItemIndex].totalPrice = newTotalPrice;
 
       cart.items[existingItemIndex] = {
-        ...existingItem._doc, // Ensures only raw data is copied
-    
+        ...existingItem._doc,
+
         quantity: newQuantity,
         totalPrice: newTotalPrice,
-        price: product.salePrice, // Make sure price is explicitly set
+        price: product.salePrice,
         regularPrice: product.regularPrice,
         salePrice: product.salePrice,
-        discount: parseFloat(productDiscount.toFixed(2)), // Ensure discount is a number
+        discount: parseFloat(productDiscount.toFixed(2)),
       };
     } else {
       if (quantity > 5) {
@@ -251,7 +254,7 @@ const add_to_cart = async (req, res) => {
 
       const totalPrice = quantity * product.salePrice;
       const subTotalPrice = quantity * product.regularPrice;
-    
+
       cart.items.push({
         productId,
         productName: product.productName,
@@ -310,12 +313,16 @@ const cart_data = async (req, res) => {
     console.log("cart_data endpoint called");
     const userId = req.body.userId;
     if (!userId) {
-      return res.status(400).json({ success: false, message: "userId is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "userId is required" });
     }
     // console.log(userId)
     const cart = await Cart.findOne({ userId });
     if (!cart) {
-      return res.status(404).json({ success: false, message: "Cart not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Cart not found" });
     }
     console.log("cart data:", cart);
     res.status(200).json({ success: true, cart });
@@ -324,7 +331,6 @@ const cart_data = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-
 
 const get_cart = async (req, res) => {
   try {
@@ -356,7 +362,8 @@ const get_cart = async (req, res) => {
     if (!cart || cart.items.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Cart is empty, or some products may get unavailable, add something before checkout...",
+        message:
+          "Cart is empty, or some products may get unavailable, add something before checkout...",
       });
     }
 
@@ -373,7 +380,10 @@ const get_cart = async (req, res) => {
 
     // Update cart if items were filtered out
     if (filteredItems.length < cart.items.length) {
-      const subTotal = filteredItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      const subTotal = filteredItems.reduce(
+        (sum, item) => sum + item.totalPrice,
+        0
+      );
       const finalTotal = subTotal - cart.globalDiscount;
 
       cart = await Cart.findOneAndUpdate(
@@ -391,7 +401,7 @@ const get_cart = async (req, res) => {
         },
       });
     }
-    if(cart.items.length === 0) {
+    if (cart.items.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Cart is empty, add something before checkout...",
@@ -420,88 +430,89 @@ const get_cart = async (req, res) => {
   }
 };
 
-
 const get_cart_items = async (req, res) => {
   try {
     const userId = req.body.userId;
-    
+
     // Best practice: Add input validation
     if (!userId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "userId is required" 
+      return res.status(400).json({
+        success: false,
+        message: "userId is required",
       });
     }
-    await globalFieldUpdation(userId)
+    await globalFieldUpdation(userId);
     // Add proper error handling for invalid ObjectId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid userId format" 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid userId format",
       });
     }
 
-    let cart = await Cart.findOne({ userId })
-  .populate({
-    path: "items.productId",
-    populate: {
-      path: "category"
-    }
-  });
+    let cart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      populate: {
+        path: "category",
+      },
+    });
 
     if (!cart || cart.items.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "No items in cart" 
+      return res.status(404).json({
+        success: false,
+        message: "No items in cart",
       });
     }
     // console.log("cart is ", cart)
     // Filter out blocked products
     const filteredItems = cart.items.filter(
-      (item) => item.productId && 
-                !item.productId.isBlocked && 
-                item.productId.category && 
-                !item.productId.category.isBlocked
+      (item) =>
+        item.productId &&
+        !item.productId.isBlocked &&
+        item.productId.category &&
+        !item.productId.category.isBlocked
     );
     // console.log("filtered items: " + filteredItems);
     // Update cart if items were filtered out
     if (filteredItems.length < cart.items.length) {
-      const subTotal = filteredItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      const subTotal = filteredItems.reduce(
+        (sum, item) => sum + item.totalPrice,
+        0
+      );
       const finalTotal = subTotal - cart.globalDiscount;
-      
+
       cart = await Cart.findOneAndUpdate(
         { userId },
-        { 
+        {
           items: filteredItems,
           subTotal: subTotal,
-          finalTotal: finalTotal
+          finalTotal: finalTotal,
         },
         { new: true }
       ).populate({
         path: "items.productId",
         populate: {
-          path: "category"
-        }
+          path: "category",
+        },
       });
-      await globalFieldUpdation(userId)
-      return res.status(200).json({ 
-        success: true, 
+      await globalFieldUpdation(userId);
+      return res.status(200).json({
+        success: true,
         cartItems: filteredItems,
-        message: "Some items were removed because they are no longer available" 
+        message: "Some items were removed because they are no longer available",
       });
     }
-    await globalFieldUpdation(userId)
-    return res.status(200).json({ 
-      success: true, 
+    await globalFieldUpdation(userId);
+    return res.status(200).json({
+      success: true,
       cartItems: filteredItems,
-      message: "Cart Items were successfully retrieved." 
+      message: "Cart Items were successfully retrieved.",
     });
-    
   } catch (error) {
     console.error("Error getting cart items:", error);
-    return res.status(500).json({ 
-      success: false, 
-      message: "Internal server error" 
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };
@@ -542,21 +553,26 @@ const remove_from_cart = async (req, res) => {
   }
 };
 
-
 const processCheckout = async (req, res) => {
   try {
     const {
       user,
       orderItems,
+      orderedAmount,
       totalAmount,
       shippingAddress,
       paymentMethod,
-      shippingFee,  
+      shippingFee,
       totalDiscount,
       couponDiscount,
+      paymentStatus,
+      razorpayPaymentId = "NIL",
     } = req.body;
 
-    // Validate token
+    console.log("OrderData: ", JSON.stringify(req.body));
+    console.log("Payment method is : ", paymentMethod);
+    console.log("payment status is : ", paymentStatus);
+    console.log("Razor pay payment id is : ", razorpayPaymentId);
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies.user_access_token;
     if (!token) {
@@ -571,9 +587,48 @@ const processCheckout = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Order items are required" });
     }
+    console.log(
+      "payament status just before paymentStatusUpdated is : ",
+      paymentStatus
+    );
+    let paymentStatusUpdated = paymentStatus;
+    if (paymentMethod === "Cash on Delivery") {
+      paymentStatusUpdated = "Pending";
+    } else if (paymentMethod === "Razor pay") {
+      if (!razorpayPaymentId) {
+        return res.status(400).json({
+          success: false,
+          message: "Razorpay payment ID is required for Razor pay payments",
+        });
+      }
+      paymentStatusUpdated = paymentStatus;
+    } else if (paymentMethod === "wallet") {
+      console.log("User i have got is : ", user);
+      const wallet = await Wallet.findOne({ userId: user });
+      if (!wallet) {
+        return res
+          .status(400)
+          .json({ success: false, message: "No wallet found, create wallet" });
+      }
+      if (wallet.balance < totalAmount) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Insufficient balance in wallet" });
+      }
+      wallet.balance -= totalAmount;
 
+      const transactionItem = {
+        type: "debit",
+        amount: totalAmount,
+        description: "Withdrawn from wallet",
+        date: Date.now(),
+      };
 
- 
+      wallet.transactions.push(transactionItem);
+
+      await wallet.save();
+      paymentStatusUpdated = "Completed";
+    }
 
     const processedItems = orderItems.map((item) => ({
       product: item.product,
@@ -583,8 +638,7 @@ const processCheckout = async (req, res) => {
       price: item.price,
       discount: item.discount || 0,
       orderStatus: "Pending",
-      paymentStatus:
-        paymentMethod === "Cash on Delivery" ? "Pending" : "Processing",
+      paymentStatus: paymentStatusUpdated,
       totalPrice: Number(item.price) * Number(item.quantity),
     }));
 
@@ -612,15 +666,35 @@ const processCheckout = async (req, res) => {
       await product.save();
     }
 
-    // Create new order
+    console.log("Final Order Data before saving:", {
+      user,
+      orderItems: processedItems,
+      orderedAmount,
+      totalAmount,
+      payableAmount: totalAmount,
+      shippingAddress,
+      orderStatus: "Pending",
+      paymentMethod,
+      paymentStatus: paymentStatusUpdated,
+      razorpayPaymentId, // ✅ Ensure this is not undefined
+      totalDiscount,
+      couponDiscount,
+      shippingFee,
+      deliveryBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+  
+
     const newOrder = new Order({
       user,
       orderItems: processedItems,
+      orderedAmount,
       totalAmount,
+      payableAmount: totalAmount,
       shippingAddress: {
-        name: shippingAddress.name, // Map from frontend fullName to name
+        name: shippingAddress.name,
         email: shippingAddress.email,
-        phone: shippingAddress.phone, // Map from frontend mobileNumber to phone
+        phone: shippingAddress.phone,
         landmark: shippingAddress.landmark || "",
         pincode: shippingAddress.pincode,
         city: shippingAddress.city,
@@ -629,32 +703,48 @@ const processCheckout = async (req, res) => {
       },
       orderStatus: "Pending",
       paymentMethod,
-      paymentStatus: "Pending",
+      paymentStatus: paymentStatusUpdated,
+      // Explicitly set razorpayPaymentId with a conditional
+      razorpayPaymentId : razorpayPaymentId || "NIL",
       totalDiscount: totalDiscount || 0,
       couponDiscount: couponDiscount || 0,
       shippingFee,
       deliveryBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    const savedOrder = await newOrder.save();    
-    // await Cart.findOneAndUpdate(
-    //   { user: user }, 
-    //   { $set: { items: [], subTotal: 0, totalDiscount: 0, finalTotal: 0 } }, 
-    //   { new: true } 
-    // );
+    console.log(
+      "New order object before save:",
+      JSON.stringify(newOrder.toObject(), null, 2)
+    );
     
+    const savedOrder = await newOrder.save();
+    console.log(
+      "Saved order object:",
+      JSON.stringify(savedOrder.toObject(), null, 2)
+    );
+
+    const result = await Cart.findOneAndDelete({ userId: user });
+    if (result) {
+      console.log("Cart deleted successfully:", result);
+    } else {
+      console.log("No cart found for this user.");
+    }
 
     res.status(200).json({
       success: true,
       orderId: savedOrder.orderId,
       orderData: {
+        _id: savedOrder._id,
         orderId: savedOrder.orderId,
+        orderedAmount: savedOrder.orderedAmount,
         totalAmount: savedOrder.totalAmount,
         shippingAddress: savedOrder.shippingAddress,
         paymentMethod: savedOrder.paymentMethod,
         orderStatus: "Pending",
+        //razorpayPaymentId: savedOrder.razorpayPaymentId,
         paymentStatus:
-        paymentMethod === "Cash on Delivery" ? "Pending" : "Processing",
+          paymentMethod === "Cash on Delivery" ? "Pending" : "Processing",
+        razorpayPaymentId,
       },
     });
   } catch (error) {
@@ -666,34 +756,32 @@ const processCheckout = async (req, res) => {
   }
 };
 
-
-const clear_cart =async (req, res) => {
-  console.log("clear cart is working....")
+const clear_cart = async (req, res) => {
+  console.log("clear cart is working....");
   try {
-    const token = req.headers.authorization?.split(" ")[1] || req.cookies.user_access_token;
+    const token =
+      req.headers.authorization?.split(" ")[1] || req.cookies.user_access_token;
     const decoded = jwtDecode(token);
     const user = decoded._id;
-    console.log("user is now",  user)
+    console.log("user is now", user);
     const result = await Cart.findOneAndDelete({ userId: user });
-if (result) {
-  console.log("Cart deleted successfully:", result);
-} else {
-  console.log("No cart found for this user.");
-}
-
+    if (result) {
+      console.log("Cart deleted successfully:", result);
+    } else {
+      console.log("No cart found for this user.");
+    }
   } catch (error) {
     console.log(error.message);
   }
 };
 
-
 module.exports = {
   add_to_cart,
-  cart_data,//full cart data
-  get_cart,//items
-  get_cart_items,//items
+  cart_data,
+  get_cart,
+  get_cart_items,
   remove_from_cart,
   processCheckout,
   refresh_cart,
-  clear_cart
+  clear_cart,
 };

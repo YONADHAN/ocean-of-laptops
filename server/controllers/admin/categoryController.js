@@ -1,4 +1,5 @@
 const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema")
 // console.log(Category);
 
 const addCategory = async (req, res) => {
@@ -181,6 +182,46 @@ const get_category_list = async (req, res) => {
   }
 };
 
+
+
+const  update_category_offer = async (req, res) => {
+  try {
+    const { offer, categoryId } = req.body;
+
+    // Validate offer percentage
+    if (offer < 0 || offer > 100) {
+      return res.status(400).json({ success: false, message: "Offer should be between 0 and 100" });
+    }
+
+    // Find and update category
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ success: false, message: "Category not found" });
+    }
+
+    category.categoryOffer = offer;  
+    category.offer = offer;
+    await category.save();
+
+    // Update discounted prices for products in the category
+    const products = await Product.find({ category: categoryId }).populate('category').select("regularPrice offer discountedPrice");
+
+    await Promise.all(
+      products.map(async (product) => {
+        const finalOffer = Math.max(offer, product.offer || 0);
+        product.salePrice= product.regularPrice - (product.regularPrice * finalOffer / 100);
+        await product.save();
+      })
+    );
+
+    res.status(200).json({ success: true, message: "Category offer updated successfully", category });
+    
+  } catch (error) {
+    console.error("Error updating category offer:", error);
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
 module.exports = {
   addCategory,
   getCategory,
@@ -189,4 +230,5 @@ module.exports = {
   category_unblock,
   get_category_list,
   getOneCategory,
+  update_category_offer,
 };

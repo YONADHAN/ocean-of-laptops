@@ -66,11 +66,11 @@ const ProductCollection = ({ categoryId, categoryName }) => {
         //toast.error(response.data.message || "Failed to fetch products.");
       }
     } catch (error) {
-      // Extract error message from backend response or fallback to generic error
+   
       const errorMessage = error.response?.data?.message || "Failed to fetch products.";
       const statusCode = error.response?.status;
   
-      // Display error messages based on status codes
+    
       switch (statusCode) {
         case 400:
           //toast.error(errorMessage || "Invalid category ID or category is blocked.");
@@ -145,7 +145,7 @@ const ProductCollection = ({ categoryId, categoryName }) => {
             disabled={loading}
             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50"
           >
-            {/* {loading ? 'Loading...' : 'More'} */}
+            
             {loading ? (
               <>
                 <LoadingSpinner size="sm" color="gray" />

@@ -56,7 +56,7 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
             </span>
           );
         case "total":
-          return <span className="text-sm text-gray-900">₹{order.totalAmount}</span>;
+          return <span className="text-sm text-gray-900">₹{order.orderedAmount}</span>;
         case "actions":
           return (
             <div className="flex justify-center space-x-3">

@@ -6,7 +6,7 @@ import ProductCard from '../UserComponents/products/productCardModel';
 import {axiosInstance} from '../../api/axiosConfig'
 
 
-const ProductCollection = ({ categoryId, categoryName }) => {
+const ProductCollection = ({ categoryId, categoryName, fromLandingPage = false }) => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -92,6 +92,7 @@ const ProductCollection = ({ categoryId, categoryName }) => {
             key={product._id}
             product={product}
             onProductClick={goToProductDetailsPage}
+            fromLandingPage = {fromLandingPage}
           />
         ))}
       </div>

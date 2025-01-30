@@ -12,9 +12,7 @@ const refreshAccessToken = async (req, res) => {
   console.log("~~~~~Refreshing Token~~~~~");
 
   try {
-    // Extract the refresh token from cookies
-    // const refreshToken =
-    //   req?.cookies?.userRefreshToken || req?.cookies?.adminRefreshToken;
+  
 
     const refreshToken = req?.cookies?.RefreshToken;
 
@@ -64,11 +62,6 @@ const refreshAccessToken = async (req, res) => {
     if (expiresAt <= new Date()) {
       await RefreshToken.deleteOne({ token: refreshToken });
 
-      // res.clearCookie(`${role}RefreshToken`, {
-      //   httpOnly: true,
-      //   secure: process.env.NODE_ENV === "production",
-      //   sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      // });
 
       res.clearCookie(`RefreshToken`, {
         httpOnly: true,
@@ -210,34 +203,7 @@ const googleAuth = async (req, res) => {
 
       const { password, ...userDetails } = user.toObject();
 
-      // if (savedToken) {
-      //     console.log("Storing refresh token in cookies...");
-      //     storeToken(
-      //         `${role}RefreshToken`,
-      //         refreshToken,
-      //         7 * 24 * 60 * 60 * 1000,
-      //         res
-      //     );
-          
-
-      //     console.log("Returning success response for:", email);
-      //     return res.status(200).json({
-      //         success: true,
-      //         message: `${role.charAt(0).toUpperCase() + role.slice(1)} logged in successfully`,
-      //         userData: userDetails,
-      //         accessToken,
-      //         role,
-      //     });
-      // }
-
-      // if (savedToken) {
-      //   console.log("Storing refresh token in cookies...");
-      //   storeToken(
-      //       `${role}RefreshToken`,
-      //       refreshToken,
-      //       7 * 24 * 60 * 60 * 1000,
-      //       res
-      //   );
+     
         
         if (savedToken) {
           console.log("Storing refresh token in cookies...");

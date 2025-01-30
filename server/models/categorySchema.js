@@ -15,9 +15,10 @@ const categorySchema = new Schema({
         type:Boolean,
         default: true
     },
-    categoryOffer:{
-        type:Date,
-        default:Date.now
+    offer: {
+        type: Number,
+        required: true,
+        default: 0,
     },
     createdAt: {
         type:Date,
@@ -35,5 +36,6 @@ const categorySchema = new Schema({
         default: 'active',
     },
 })
+
 const Category = mongoose.model("Category",categorySchema)
 module.exports = Category;

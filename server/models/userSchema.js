@@ -101,7 +101,18 @@ const userSchema = new Schema({
             },
         },
     ],
-    // Additional fields
+    appliedCoupons: [
+        {
+            couponId: {
+                type: Schema.Types.ObjectId,
+                ref: "Coupon",
+            },
+            appliedOn: {
+                type: Date,
+                default: Date.now,
+            },
+        }
+    ],
     birthday: {
         type: Date,
         required: false,

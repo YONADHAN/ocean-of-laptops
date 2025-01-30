@@ -6,7 +6,9 @@ import AdminLayout from '../pages/admin/AdminLayout';
 import Error404Page from '../pages/others/Error404';
 
 //AdminComponents
-import AdminDashboard from '../components/AdminComponents/Dashboard/AdminDashboardMainComponent';
+// import AdminDashboard from '../components/AdminComponents/Dashboard/AdminDashboardMainComponent';
+import AdminDashboard from '../components/AdminComponents/AdminDashboard/AdminMainDashboard';
+import AdminSalesReport from '../components/AdminComponents/SalesReport/AdminSalesReport';
 import AdminCategory from '../components/AdminComponents/Category/AdminCategoryMainComponent';
 import AdminCategoryAdd from '../components/AdminComponents/Category/AdminCategoryAdd';
 import AdminCategoryEdit from '../components/AdminComponents/Category/AdminCategoryEdit';
@@ -52,6 +54,7 @@ const AdminRoutes = () => {
                 />
                 <Route path='/' element={<PrivateRoute allowedRole="admin" redirectTo="/admin/signin"><AdminLayout/></PrivateRoute>}>
                     <Route path="dashboard" element={<AdminDashboard />}/>
+                    <Route path='sales_report' element={<AdminSalesReport/>}/>
                     <Route path="category" element={<AdminCategory />} />
                     <Route path='category_add' element={<AdminCategoryAdd/>}/>
                     <Route path='category_edit/:id' element={<AdminCategoryEdit/>}/>

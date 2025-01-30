@@ -260,13 +260,14 @@ const user_signin = async (req, res) => {
       });
     }
 
-    // Compare provided password with stored hashed password
+    if(!user.password && user && user.googleId){
+      return res.status(400).json({ message: "You have used google sign to login. Please try google or add password using forgot password" });
+    }
+    
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
       return res.status(404).json({ message: "Password does not match." });
-    }
-
-    // console.log("after is amathc")
+    }   
 
     const userDataToGenerateToken = {
       _id: user?._id,
@@ -283,11 +284,10 @@ const user_signin = async (req, res) => {
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
     const savedToken = await newRefreshToken.save();
-    // console.log("Saved Token is : (from usersignup auth controller)",savedToken)
+
     const { password: _, ...userDetails } = user.toObject();
     if (savedToken) {
-      storeToken(
-        // "userRefreshToken",
+      storeToken(      
         "RefreshToken",
         refreshToken,
         7 * 24 * 60 * 60 * 1000,
@@ -295,7 +295,7 @@ const user_signin = async (req, res) => {
       );
       console.log("RefreshRoken is , : ", savedToken);
 
-      // Send tokens back to the client
+   
       res.status(200).json({
         message: "User Logged In successfully",
         userData: userDetails,

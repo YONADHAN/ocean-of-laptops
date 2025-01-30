@@ -22,18 +22,18 @@ const AccountSettings = () => {
       icon: <MapPin className="w-8 h-8 text-blue-500" />,
       link: baseURL+"/addresses",
     },
-    {
-      title: "Payment Information",
-      description: "Manage your payment methods and billing details",
-      icon: <CreditCard className="w-8 h-8 text-blue-500" />,
-      link: baseURL+"/payment",
-    },
-    {
-      title: "Account Preferences",
-      description: "Customize your account settings and notifications",
-      icon: <Settings className="w-8 h-8 text-blue-500" />,
-      link: baseURL+"/preferences",
-    },
+    // {
+    //   title: "Payment Information",
+    //   description: "Manage your payment methods and billing details",
+    //   icon: <CreditCard className="w-8 h-8 text-blue-500" />,
+    //   link: baseURL+"/payment",
+    // },
+    // {
+    //   title: "Account Preferences",
+    //   description: "Customize your account settings and notifications",
+    //   icon: <Settings className="w-8 h-8 text-blue-500" />,
+    //   link: baseURL+"/preferences",
+    // },
     {
       title: "Account Privacy and Security",
       description: "Manage your security settings and privacy controls",

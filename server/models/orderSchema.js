@@ -61,9 +61,10 @@ const orderSchema = new mongoose.Schema({
       paymentStatus: {
         type: String,
         required: true,
-        enum: ["Pending", "Paid", "Failed", "Refunded"],
+        enum: ["Processing","Pending","Completed", "Paid", "Failed", "Refunded"],
         default: "Pending",
       },
+     
       DeliveredOn: {
         type: Date,
       },
@@ -84,11 +85,18 @@ const orderSchema = new mongoose.Schema({
         },
       },
     },
-  ],
+  ],  
   totalAmount: {
     type: Number,
     required: true,
     min: [0, "Total amount cannot be negative"],
+  },
+  payableAmount: {
+    type: Number,
+    min: [0, "Payable amount cannot be negative"],
+  },
+  orderedAmount: {
+    type: Number
   },
   shippingAddress: {
     name: { type: String, required: true },
@@ -111,6 +119,10 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  razorpayPaymentId: {
+    type: String,
+    default: null
+},
   totalDiscount: {
     type: Number,
     min: [0, "Discount cannot be negative"],
@@ -179,6 +191,11 @@ orderSchema.pre("save", function (next) {
 // Middleware to update `updatedAt`
 orderSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
+  next();
+});
+
+orderSchema.pre('save', function(next) {
+  console.log('Pre-save document:', JSON.stringify(this.toObject(), null, 2));
   next();
 });
 

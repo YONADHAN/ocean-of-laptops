@@ -78,9 +78,9 @@ const Header = ({ role, toggleSidebar, toggleTheme, isAuthenticated, userAvatar 
           </div>
 
           <div className="flex items-center gap-6">
-            <button className={`p-2 rounded-full ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}>
+            {/* <button className={`p-2 rounded-full ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}>
               <Bell className="h-5 w-5" />
-            </button>
+            </button> */}
 
             {/* <button
               onClick={handleThemeToggle}

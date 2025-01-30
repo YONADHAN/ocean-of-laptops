@@ -6,9 +6,15 @@ import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import AddressForm from './AccountAddressManagementAddressForm';
 
-const EditAddress = () => {
+const EditAddress = ({ redirectToCheckout = false, onSuccess, addressId }) => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  let {id }= useParams();
+  if(redirectToCheckout && redirectToCheckout === true){
+    id = addressId;
+  }
+  // console.log("id", id)
+  // console.log(redirectToCheckout)
+  //const { id } = useParams();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [address, setAddress] = useState(null);
@@ -25,14 +31,16 @@ const EditAddress = () => {
   }, [id, location.state]);
 
   const fetchAddress = async () => {
-    try {
-  
+    try {  
+      console.log("id", id)
       const response = await authService.fetchAddresses(id);
+      console.log("response", response)
       setAddress(response.data.address);
     } catch (error) {
       console.error('Error fetching address:', error);
       toast.error('Failed to load address details');
-      navigate('/user/features/account/addresses');
+     // navigate('/user/features/account/addresses');
+      navigate(redirectToCheckout ? '/user/features/cart/checkout' : '/user/features/account/addresses');
     } finally {
       setIsLoading(false);
     }
@@ -46,13 +54,14 @@ const EditAddress = () => {
         toast.error('Please login to continue');
         return;
       }
-
    
 
       await authService.editAddress(id, updatedAddress); 
 
       toast.success('Address updated successfully');
-      navigate('/user/features/account/addresses');
+      //navigate('/user/features/account/addresses');
+      if (onSuccess) onSuccess();
+      navigate(redirectToCheckout ? '/user/features/cart/checkout' : '/user/features/account/addresses');
     } catch (error) {
       console.error('Error updating address:', error);
       toast.error(error.response?.data?.message || 'Failed to update address');

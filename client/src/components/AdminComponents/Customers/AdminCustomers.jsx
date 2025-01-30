@@ -112,7 +112,7 @@ function UserManagement() {
   const [pagination, setPagination] = useState({
     totalCustomers: 0,
     totalPages: 0,
-    limit: 4,
+    limit: 3,
   });
   const [showAlert, setShowAlert] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);

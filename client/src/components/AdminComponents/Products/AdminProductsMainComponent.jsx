@@ -1,14 +1,13 @@
-
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiEdit2 } from "react-icons/fi";
 import { LiaUserSlashSolid, LiaUserSolid } from "react-icons/lia";
 import { axiosInstance } from "../../../api/axiosConfig";
+import { productService } from "../../../apiServices/adminApiServices";
 import ConfirmationAlert from "../../MainComponents/ConformationAlert";
 import Table from "../../MainComponents/Table";
 import Pagination from "../../MainComponents/Pagination";
-import { productService } from "../../../apiServices/adminApiServices";
+import { toast } from "sonner";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -16,33 +15,34 @@ const ProductList = () => {
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPercentage, setOfferPercentage] = useState("");
+  const [selectedProductForOffer, setSelectedProductForOffer] = useState(null);
+  const [showOfferConfirmation, setShowOfferConfirmation] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    limit: 4,
+    limit: 3,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const navigate = useNavigate();
- 
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500); 
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
 
   useEffect(() => {
     setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchProducts(1, pagination.limit);
   }, [debouncedSearchTerm]);
 
-
   useEffect(() => {
     if (pagination.currentPage > 1) {
- 
       fetchProducts(pagination.currentPage, pagination.limit);
     }
   }, [pagination.currentPage]);
@@ -51,7 +51,6 @@ const ProductList = () => {
     setLoading(true);
     setError(null);
     try {
-    
       const response = await productService.getProducts({
         page,
         limit,
@@ -94,9 +93,15 @@ const ProductList = () => {
               : product
           )
         );
+        toast.success(
+          `Product ${
+            response.data.isBlocked ? "blocked" : "unblocked"
+          } successfully`
+        );
       }
     } catch (error) {
       console.error("Error toggling product block status:", error);
+      toast.error("Failed to update product status");
     } finally {
       setShowAlert(false);
       setSelectedProduct(null);
@@ -110,25 +115,80 @@ const ProductList = () => {
 
   const handleEdit = (productId) => {
     navigate(`/admin/product_edit/${productId}`);
-    console.log("Edit product:", productId);
   };
 
-  const confirmBlockToggle = (product) => {
-    setSelectedProduct(product);
-    setShowAlert(true);
+  const handleOfferClick = (product) => {
+    setSelectedProductForOffer(product);
+    setOfferPercentage(product.offer.toString());
+    setShowOfferModal(true);
   };
 
-  const proceedBlockToggle = () => {
-    if (selectedProduct) {
-      handleBlock(selectedProduct._id, selectedProduct.isBlocked);
+  const handleOfferInputChange = (e) => {
+    const value = e.target.value;
+    if (value === "" || (Number(value) >= 0 && Number(value) <= 100)) {
+      setOfferPercentage(value);
     }
-    setShowAlert(false);
-    setSelectedProduct(null);
   };
 
-  const cancelBlockToggle = () => {
-    setShowAlert(false);
-    setSelectedProduct(null);
+  const handleOfferSubmit = () => {
+    if (offerPercentage === "" || isNaN(offerPercentage)) {
+      toast.error("Please enter a valid offer percentage");
+      return;
+    }
+    setShowOfferModal(false);
+    setShowOfferConfirmation(true);
+  };
+
+  const confirmOfferSubmit = async () => {
+    try {
+      const productId = selectedProductForOffer._id;
+      const offer = parseFloat(offerPercentage);
+      if (offer < 0 || offer > 100) {
+        toast.error("Offer percentage should be between 0 and 100");
+        return;
+      }
+    
+
+      const response = await productService.updateProductOffer(
+        productId,
+        offer
+      );
+   
+
+      if (response.status === 200) {
+        const updatedProducts = products.map((product) =>
+          product._id === productId ? { ...product, offer } : product
+        );
+        setProducts(updatedProducts);
+
+        if (offer === 0) {
+          toast.success(
+            `Offer removed from ${selectedProductForOffer.productName}`
+          );
+        } else {
+          toast.success(
+            `${offer}% offer applied to ${selectedProductForOffer.productName}`
+          );
+        }
+      }
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating offer:", error);
+      toast.error("Failed to update offer. Please try again.");
+    } finally {
+      setShowOfferModal(false);
+      setShowOfferConfirmation(false);
+      setSelectedProductForOffer(null);
+      setOfferPercentage("");
+    }
+  };
+
+  const cancelOfferSubmit = () => {
+    setShowOfferConfirmation(false);
+  };
+
+  const goToCategory = () => {
+    navigate(`/admin/category`);
   };
 
   const columns = [
@@ -137,13 +197,17 @@ const ProductList = () => {
     { label: "Price", key: "price" },
     { label: "Stock", key: "stock" },
     { label: "Status", key: "status" },
+    { label: "Offer", key: "offer" },
     { label: "Actions", key: "actions" },
   ];
 
   const renderHeader = (columns) => (
     <>
       {columns.map((column, index) => (
-        <div key={index} className="hidden md:block p-3 ml-9 text-left font-medium">
+        <div
+          key={index}
+          className="hidden md:block p-3 ml-9 text-left font-medium"
+        >
           {column.label}
         </div>
       ))}
@@ -206,14 +270,51 @@ const ProductList = () => {
               {product.isBlocked ? "Blocked" : "Active"}
             </span>
           );
+        case "offer":
+          return (
+            <div className="w-44 h-16 flex">
+            <div 
+              className="bg-green-200 text-green-800 flex items-center justify-center px-3 w-16 flex-col"
+              title="Click to change product offer"
+            >
+              {Math.max(product.offer, product.category.offer)}%
+              <p className="text-[10px]">Applied</p>
+            </div>
+            
+            <div className="flex flex-col flex-grow">
+              <button
+                onClick={() => handleOfferClick(product)}
+                className={`py-1 text-xs font-medium h-8 w-full ${
+                  product.offer === 0
+                    ? "bg-red-800 text-white hover:bg-red-700"
+                    : "bg-green-800 text-white hover:bg-green-700"
+                }`}
+                title="Click to change product offer"
+              >
+                {product.offer === 0
+                  ? "Add Offer"
+                  : `${product.offer}% Pro off`}
+              </button>
+              
+              <p
+                className="text-xs bg-gray-400 text-white px-2 py-1 h-8 w-full text-center cursor-pointer"
+                onDoubleClick={goToCategory}
+                title="Double click to navigate to category page"
+              >
+                {product.category.offer}% Cat off
+              </p>
+            </div>
+          </div>
+          
+          );
         case "actions":
           return (
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => handleEdit(product._id)}
                 className="text-blue-600 hover:text-blue-800"
-              >Edit
-              
+              >
+                Edit
               </button>
               <button
                 onClick={() => handleBlock(product)}
@@ -232,7 +333,6 @@ const ProductList = () => {
 
     return (
       <>
-        {/* Mobile view */}
         <div className="md:hidden col-span-6 space-y-4 p-4 border-b">
           {columns.map((column) => (
             <div key={column.key} className="flex justify-between items-start">
@@ -242,7 +342,6 @@ const ProductList = () => {
           ))}
         </div>
 
-        {/* Desktop view */}
         {columns.map((column) => (
           <div key={column.key} className="hidden md:block p-4">
             {renderContent(column.key)}
@@ -277,7 +376,7 @@ const ProductList = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 ">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-semibold text-blue-800">Products</h2>
         <Link
@@ -287,6 +386,7 @@ const ProductList = () => {
           + Add New Product
         </Link>
       </div>
+
       <div className="mb-4 relative">
         <input
           type="text"
@@ -301,6 +401,7 @@ const ProductList = () => {
           </div>
         )}
       </div>
+
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
           <div className="overflow-hidden">
@@ -313,6 +414,7 @@ const ProductList = () => {
           </div>
         </div>
       </div>
+
       <div className="mt-4">
         <Pagination
           currentPage={pagination.currentPage}
@@ -322,6 +424,8 @@ const ProductList = () => {
           }
         />
       </div>
+
+      {/* Block/Unblock Confirmation Modal */}
       <ConfirmationAlert
         show={showAlert}
         title={`${selectedProduct?.isBlocked ? "Unblock" : "Block"} Product`}
@@ -333,6 +437,58 @@ const ProductList = () => {
         noText="No, Cancel"
         yesText="Yes, Confirm"
       />
+
+      {/* Offer Modal */}
+      {showOfferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">
+              {offerPercentage === "0" ? "Add Offer" : "Update Offer"}
+            </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Offer Percentage
+              </label>
+              <input
+                type="number"
+                value={offerPercentage}
+                onChange={handleOfferInputChange}
+                className="w-full px-3 py-2 border rounded-lg"
+                placeholder="Enter offer percentage"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowOfferModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleOfferSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Apply Offer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Offer Confirmation Modal */}
+      {showOfferConfirmation && (
+        <ConfirmationAlert
+          show={showOfferConfirmation}
+          title="Confirm Offer Application"
+          message={`Are you sure you want to apply ${offerPercentage}% offer to ${selectedProductForOffer?.productName}?`}
+          onCancel={cancelOfferSubmit}
+          onProceed={confirmOfferSubmit}
+          noText="No, Cancel"
+          yesText="Yes, Apply"
+        />
+      )}
     </div>
   );
 };

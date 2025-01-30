@@ -15,7 +15,7 @@ const ConfirmationAlert = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
-        <p className="text-gray-600 mt-2">{message}</p>
+        <div className="text-gray-600 mt-2">{message}</div>
         <div className="flex justify-end gap-4 mt-6">
           <button
             onClick={onCancel}

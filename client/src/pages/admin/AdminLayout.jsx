@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Home, Users, Settings, Tag, User, ShoppingCart, Image, Gift, Sliders } from 'lucide-react';
+import { Home, Users, Settings, Tag, User, ShoppingCart,PackageSearch, Image, Gift, Sliders, ClipboardList ,ListOrdered} from 'lucide-react';
 import Header from '../../components/MainComponents/Header';
 import Sidebar from '../../components/MainComponents/Sidebar';
 import Footer from '../../components/MainComponents/Footer';
@@ -13,8 +13,8 @@ const AdminLayout = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);  
 
   const role = "admin";
-  const isAuthenticated = true; // Replace with actual authentication check
-  const userAvatar = null; // Replace with actual user avatar
+  const isAuthenticated = true; 
+  const userAvatar = null; 
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
@@ -63,10 +63,11 @@ const AdminLayout = () => {
 
   const navItems = [
     { title: 'Dashboard', url: '/admin/dashboard', icon: Home },
+    {title:'Sales Report', url:'/admin/sales_report', icon: ClipboardList},
     { title: 'Category', url: '/admin/category', icon: Tag },
-    { title: 'Products', url: '/admin/products', icon: ShoppingCart },  
-    { title: 'Customers', url: '/admin/customers', icon: User },
-    { title: 'Orders', url: '/admin/orders', icon: ShoppingCart },
+    { title: 'Products', url: '/admin/products', icon: PackageSearch },  
+    { title: 'Customers', url: '/admin/customers', icon: Users },
+    { title: 'Orders', url: '/admin/orders', icon: ListOrdered },
     { title: 'Banner', url: '/admin/banner', icon: Image },
     { title: 'Coupon', url: '/admin/coupon', icon: Gift },
     { title: 'Settings', url: '/admin/settings', icon: Sliders },

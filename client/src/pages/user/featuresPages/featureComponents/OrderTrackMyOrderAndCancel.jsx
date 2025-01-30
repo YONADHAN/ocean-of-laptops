@@ -1,22 +1,232 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Package, Truck, CheckCircle, X } from "lucide-react";
+import { ArrowLeft, Package, Truck, CheckCircle, X, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { axiosInstance } from "../../../../api/axiosConfig";
-import {orderService} from "../../../../apiServices/userApiServices"
+import { orderService } from "../../../../apiServices/userApiServices";
 import ConfirmationAlert from "../../../../components/MainComponents/ConformationAlert";
+import ReasonMessageBox from "../../../../components/MainComponents/reasonMessageBox";
+
+
+
+
+
+
+
+
+// Separate Modal component with Tailwind styling
+const PaymentModal = ({ isOpen, onClose, message, success }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full m-4">
+        <div className={`text-center mb-4 ${success ? 'text-green-600' : 'text-red-600'}`}>
+          <p className="text-lg font-semibold">{message}</p>
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Custom hook for payment handling
+const usePaymentHandler = (orderId) => {
+  const navigate = useNavigate();
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    message: '',
+    success: false
+  });
+
+  const closeModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    if (modalState.success) {
+      navigate(`/user/features/cart/checkout/confirmation/${orderId}`);
+    }
+  };
+
+  const getTaxInvoice = async()=> {
+    const response = await axiosInstance.get(`/get_tax_invoice/${orderId}`);
+    if (!response) {
+      toast.error("Tax invoice not found. Please try again.");
+      return;
+    }
+  }
+
+  const handlePayment = async () => {
+    try {
+      const order = await axiosInstance.get(`/get_order/${orderId}`);
+      if (!order) {
+        toast.error("Order not found. Please try again.");
+        return;
+      }
+
+      const paymentStatus = order.data.order.paymentStatus;
+      const shippingAddress = order.data.order.shippingAddress;
+
+      if (paymentStatus === "Completed") {
+        setModalState({
+          isOpen: true,
+          message: "Payment already completed.",
+          success: true
+        });
+        return;
+      }
+
+      const { data: razorpayOrder } = await axiosInstance.post("/retry_payment", { orderId });
+      if (!razorpayOrder.id) {
+        setModalState({
+          isOpen: true,
+          message: "Failed to create a new Razorpay order.",
+          success: false
+        });
+        return;
+      }
+
+      const options = {
+        key: "rzp_test_2aUGLgE6VrGTVa",
+        amount: razorpayOrder.amount,
+        currency: "INR",
+        name: "LaptopHub",
+        description: "Retrying payment for your order",
+        order_id: razorpayOrder.id,
+        retry: { enabled: false },
+        handler: async (response) => {
+          try {
+            const verifyRes = await axiosInstance.post("/verify_razorpay_payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            setModalState({
+              isOpen: true,
+              message: verifyRes.data.success ? "Payment successful!" : "Payment verification failed.",
+              success: verifyRes.data.success
+            });
+
+          } catch (err) {
+            console.error("Error verifying payment:", err);
+            setModalState({
+              isOpen: true,
+              message: "Error during payment verification.",
+              success: false
+            });
+          }
+        },
+        prefill: {
+          name: shippingAddress.name,
+          email: shippingAddress.email,
+          contact: shippingAddress.phone,
+        },
+        theme: { color: "#3399cc" },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.open();
+
+      razorpayInstance.on("payment.failed", (response) => {
+        console.error("Payment failed:", response.error);
+        setModalState({
+          isOpen: true,
+          message: "Payment failed. Please try again.",
+          success: false
+        });
+      });
+
+    } catch (error) {
+      console.error("Error initializing Razorpay:", error);
+      setModalState({
+        isOpen: true,
+        message: "Failed to initialize Razorpay. Please try again.",
+        success: false
+      });
+    }
+  };
+
+  return { handlePayment, modalState, closeModal };
+};
+
+
+const handleDownloadInvoice = async (orderId) => {
+  try {
+    const response = await axiosInstance.get(`/get_tax_invoice/${orderId}`, {
+      responseType: 'arraybuffer',  // Important! This tells axios to handle binary data
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+
+    if (!response.data || response.data.byteLength === 0) {
+      toast.error("Tax invoice not found. Please try again.");
+      return;
+    }
+
+    // Create blob from array buffer
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    
+    // Create download link
+    const fileURL = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = fileURL;
+    link.download = `invoice_${orderId}.pdf`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up
+    URL.revokeObjectURL(fileURL);
+    
+    toast.success("Tax invoice downloaded successfully.");
+  } catch (error) {
+    console.error("Error downloading invoice:", error);
+    
+    // Better error handling
+    if (error.response) {
+      if (error.response.status === 403) {
+        toast.error("Invoice can only be downloaded for delivered orders.");
+      } else if (error.response.status === 404) {
+        toast.error("Invoice not found.");
+      } else {
+        toast.error("Failed to download invoice. Please try again later.");
+      }
+    } else {
+      toast.error("Network error. Please check your connection.");
+    }
+  }
+};
+
+
+
+
 
 const OrderTrackingPage = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [showProductAlert, setShowProductAlert] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [order, setOrder] = useState(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [reason, setReason] = useState("");
+  const [showReasonBox, setShowReasonBox] = useState(false);
+  const [showRazorPayModal, setShowRazorPayModal] = useState(false);
+  const [modalData, setModalData] = useState({ success: false, message: "" });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const navigate = useNavigate();
   const { orderId } = useParams();
-
+  const { handlePayment, modalState, closeModal } = usePaymentHandler(orderId);
   useEffect(() => {
     const fetchSampleOrder = async () => {
-      // const response = await axiosInstance.get(`/get_order/${orderId}`);
       const response = await orderService.getOrder(orderId);
       setOrder(response.data.order);
     };
@@ -37,7 +247,6 @@ const OrderTrackingPage = () => {
   const handleProceed = async () => {
     try {
       const response = await axiosInstance.get(`/cancel_order/${orderId}`);
-      //const response = await orderService.cancelOrder(orderId);
       if (response.status === 200) {
         toast.success("Order cancelled successfully");
         navigate("/user/features/order");
@@ -50,22 +259,15 @@ const OrderTrackingPage = () => {
 
   const handleProductCancel = async () => {
     try {
-      console.log(
-        "Product cancelled , orderId: " + orderId,
-        " productId: " + selectedProduct._id,
-        " quantity: " + selectedProduct.quantity
-      );
       const productId = selectedProduct._id;
       const quantity = selectedProduct.quantity;
-      const response =await orderService.cancelProduct(orderId, productId, quantity);
-      // const response = await axiosInstance.post(`/cancel_product`, {
-      //   orderId: orderId,
-      //   productId: selectedProduct._id,
-      //   quantity: selectedProduct.quantity,
-      // });
+      const response = await orderService.cancelProduct(
+        orderId,
+        productId,
+        quantity
+      );
       if (response.status === 200) {
         toast.success("Product cancelled successfully");
-        // const updatedOrder = await axiosInstance.get(`/get_order/${orderId}`);
         const updatedOrder = await orderService.getOrder(orderId);
         setOrder(updatedOrder.data.order);
       }
@@ -73,6 +275,82 @@ const OrderTrackingPage = () => {
       toast.error("Product cancellation failed");
     }
     setShowProductAlert(false);
+    setSelectedProduct(null);
+  };
+
+  const handleSubmitReason = (reasonText) => {
+    if (reasonText.trim() == "") {
+      toast.error(
+        "Please enter a reason before submitting your return request."
+      );
+      return;
+    }
+    if (reasonText.split("").length < 10) {
+      toast.error("Reason should contain more than 10 words");
+      return;
+    }
+    setReason(reasonText);
+    setShowReasonBox(false);
+    setShowAlert(true);
+  };
+
+  const handleSubmitProductReason = (reasonText) => {
+    if (reasonText.trim() == "") {
+      toast.error(
+        "Please enter a reason before submitting your return request."
+      );
+      return;
+    }
+    if (reasonText.split("").length < 10) {
+      toast.error("Reason should contain more than 10 words");
+      return;
+    }
+    setReason(reasonText);
+    setShowReasonBox(false);
+    setShowProductAlert(true);
+  };
+
+  const handleCancelOrder = () => {
+    setShowReasonBox(true);
+  };
+
+  const handleCancelProduct = (product) => {
+    setSelectedProduct(product);
+    setShowReasonBox(true);
+  };
+
+  const handleReturnRequest = async (reason) => {
+    try {
+      if (reason.trim() == "") {
+        toast.error(
+          "Please enter a reason before submitting your return request."
+        );
+        return;
+      }
+      if (reason.split("").length < 10) {
+        toast.error("Reason should contain more than 10 words");
+        return;
+      }
+      const response = await axiosInstance.post("/return_product", {
+        orderId: orderId,
+        productId: selectedProduct._id,
+        reason: reason,
+      });
+
+      if (response.status === 200) {
+        toast.success("Return request submitted successfully");
+        const updatedOrder = await orderService.getOrder(orderId);
+        setOrder(updatedOrder.data.order);
+      }
+    } catch (error) {
+      toast.error("Failed to submit return request");
+    }
+    setShowReturnModal(false);
+    setSelectedProduct(null);
+  };
+
+  const handleReturnModalClose = () => {
+    setShowReturnModal(false);
     setSelectedProduct(null);
   };
 
@@ -107,6 +385,28 @@ const OrderTrackingPage = () => {
     navigate(`/user/product_detail/${productId}`);
   };
 
+  const handleRetryPayment = async () => {
+    try {
+      // Pass the state setters to razorpayCheckout
+      await razorpayCheckout(orderId, setModalData, setIsModalOpen);
+    } catch (error) {
+      console.error("Error during payment retry:", error);
+      setModalData({
+        success: false,
+        message: "Failed to initialize payment. Please try again.",
+      });
+      setIsModalOpen(true);
+      toast.error("Failed to retry payment. Please try again.");
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    if (modalData.success) {
+      navigate(`/confirmation/${orderId}`);
+    }
+  };
+
   const steps = [
     { name: "Pending", icon: Package },
     { name: "Placed", icon: Package },
@@ -119,6 +419,7 @@ const OrderTrackingPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto p-4 md:p-6">
+        {/* Header section */}
         <div className="mb-6 flex items-center justify-between">
           <div
             className="flex items-center gap-4 cursor-pointer"
@@ -135,15 +436,25 @@ const OrderTrackingPage = () => {
             order.orderStatus !== "Cancelled" && (
               <button
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md flex items-center"
-                onClick={() => setShowAlert(true)}
+               
+                onClick={handleCancelOrder}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel Order
               </button>
             )}
+            {
+              order.orderStatus === 'Delivered'  && (
+                <button className="px-4 py-1 bg-black text-white" onClick={()=>handleDownloadInvoice(orderId)}>
+                  Download Invoice
+                </button>
+              )
+            }
         </div>
 
+        {/* Main content */}
         <div className="mb-8 rounded-lg bg-white p-6 shadow-lg">
+          {/* Order header */}
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-blue-800">
@@ -157,32 +468,27 @@ const OrderTrackingPage = () => {
             <div className="text-xl font-bold text-blue-600">
               {order.totalAmount.toLocaleString() ===
               calculateTotal(order.orderItems).toLocaleString() ? (
-                <>
-                  <p>₹{order.totalAmount.toLocaleString()}</p>
-                </>
+                <p>₹{order.totalAmount.toLocaleString()}</p>
               ) : (
                 <>
                   <div className="text-gray-400">
-                    Ordered Amount:{" "}
-                    <span>
-                      ₹{calculateTotal(order.orderItems).toLocaleString()}
-                    </span>
+                    Ordered Amount: ₹
+                    {calculateTotal(order.orderItems).toLocaleString()}
                   </div>
                   <div>
-                    Now Payable:{" "}
-                    <span>₹{order.totalAmount.toLocaleString()}</span>
+                    Now Payable: ₹{order.payableAmount.toLocaleString()}
                   </div>
                 </>
               )}
             </div>
           </div>
 
-          {/* Improved Order Status Tracking */}
-          <div className="w-full  mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+          {/* Order status tracking */}
+          <div className="w-full mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
             <h3 className="text-xl font-semibold text-gray-800 mb-6 flex">
               Order Status{" "}
               <div className="text-red-600">
-                {order.orderStatus == "Cancelled" ? "( Cancelled )" : ""}
+                {order.orderStatus === "Cancelled" ? "( Cancelled )" : ""}
               </div>
             </h3>
             <div className="relative">
@@ -235,6 +541,7 @@ const OrderTrackingPage = () => {
             </div>
           </div>
 
+          {/* Products table */}
           <div className="mb-8">
             <h3 className="mb-4 font-semibold text-blue-800">Products</h3>
             <div className="overflow-x-auto">
@@ -247,7 +554,7 @@ const OrderTrackingPage = () => {
                     <th className="py-3 px-4 text-right">DISCOUNT</th>
                     <th className="py-3 px-4 text-right">TOTAL</th>
                     <th className="py-3 px-4 text-right">STATUS</th>
-                    <th className="py-3 px-4 text-right">ACTIVITY</th>
+                    <th className="py-3 px-4 text-center">ACTIVITY</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -288,19 +595,118 @@ const OrderTrackingPage = () => {
                             {item.orderStatus}
                           </span>
                         </td>
+
                         <td className="py-4 px-4 text-right">
+                          {/* Cancel button logic */}
                           {item.orderStatus !== "Cancelled" &&
                             item.orderStatus !== "Delivered" && (
                               <button
-                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full flex items-center font-medium text-sm"
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium"
+                                // onClick={() => {
+                                //   setSelectedProduct(item);
+                                //   setShowProductAlert(true);
+                                // }}
                                 onClick={() => {
-                                  setSelectedProduct(item);
-                                  setShowProductAlert(true);
+                                  handleCancelProduct(item);
                                 }}
                               >
-                                +Cancel
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                                <span>Cancel</span>
                               </button>
                             )}
+
+                          {/* Return button logic */}
+                          {item.orderStatus === "Delivered" &&
+                            (!item.returnRequest?.requestStatus ||
+                              (item.returnRequest.requestStatus !==
+                                "Approved" &&
+                                item.returnRequest.requestStatus !==
+                                  "Rejected")) && (
+                              <button
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium"
+                                onClick={() => {
+                                  setSelectedProduct(item);
+                                  setShowReturnModal(true);
+                                }}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                                  />
+                                </svg>
+                                <span>
+                                  Return{" "}
+                                  {item.returnRequest?.requestStatus ===
+                                  "Pending"
+                                    ? "Request Applied"
+                                    : ""}
+                                </span>
+                              </button>
+                            )}
+
+                          {/* Return approved badge */}
+                          {item.returnRequest?.requestStatus === "Approved" && (
+                            <div className="inline-flex items-center px-3 py-1 rounded-md bg-green-500 text-white text-sm font-medium">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              <span>Return Approved</span>
+                            </div>
+                          )}
+
+                          {/* Return rejected badge */}
+                          {item.returnRequest?.requestStatus === "Rejected" && (
+                            <div className="inline-flex items-center px-3 py-1 rounded-md bg-red-500 text-white text-sm font-medium">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                              <span>Return Rejected</span>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -309,6 +715,39 @@ const OrderTrackingPage = () => {
             </div>
           </div>
 
+          <div className="bg-gray-50">
+            <div className="container mx-auto p-4 md:p-6">
+              {order &&
+                order.paymentStatus === "Pending" &&
+                order.paymentMethod === "Razor pay" && (
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <p className="text-red-500 text-center mb-4">
+                      Your payment status is pending. Please complete the
+                      payment to avoid order cancellation. If you failed to pay
+                      within 2 days after placing the order, the order gets
+                      automatically cancelled.
+                    </p>
+                    <div className="w-full flex justify-center">
+                      <button
+                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        onClick={handlePayment}
+                      >
+                        Pay Now
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              <PaymentModal
+                isOpen={modalState.isOpen}
+                onClose={closeModal}
+                message={modalState.message}
+                success={modalState.success}
+              />
+            </div>
+          </div>
+
+          {/* Address and summary section */}
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <h3 className="font-semibold text-blue-800">Shipping Address</h3>
@@ -337,24 +776,43 @@ const OrderTrackingPage = () => {
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>
-                  ₹{order.totalAmount.toLocaleString()}
+                    ₹
+                    {(
+                      order.orderedAmount +
+                      order.totalDiscount -
+                      15
+                    ).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Shipping Fee</span>
-                  <span>₹{order.shippingFee}</span>
+                  <span>Offer Discount</span>
+                  <span>-₹{order.totalDiscount.toLocaleString()}</span>
                 </div>
-                {/* <div className="flex justify-between">
-                  <span>Total Discount</span>
-                  <span>₹{order.totalDiscount}</span>
+
+                <div className="flex justify-between">
+                  <span>Coupon</span>
+                  <span>-₹{order.couponDiscount.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Coupon Discount</span>
-                  <span>₹{order.couponDiscount}</span>
-                </div> */}
-                <div className="flex justify-between font-bold text-blue-800 text-lg pt-2 border-t">
+                  <span>Shipping Fee</span>
+                  <span>+₹{order.shippingFee}</span>
+                </div>
+
+                <div className="flex justify-between font-bold text-lg pt-2 border-t">
                   <span>Total</span>
-                  <span>₹{(order.totalAmount+order.shippingFee).toLocaleString()}</span>
+                  <span>
+                    ₹{(order.totalAmount + order.shippingFee).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold text-blue-800 text-lg pt-2 border-t">
+                  <span>Payable Amount</span>
+                  <span>
+                    ₹
+                    {(
+                      order.payableAmount +
+                      (order.payableAmount === 0 ? 0 : order.shippingFee)
+                    ).toLocaleString()}
+                  </span>
                 </div>
                 <div className="pt-2">
                   <p className="text-gray-600">
@@ -372,27 +830,69 @@ const OrderTrackingPage = () => {
           </div>
         </div>
 
+        {showReasonBox && (
+          <ReasonMessageBox
+            title="Reason for Cancellation"
+            placeholder="Please provide a reason for cancellation..."
+            onSubmit={
+              selectedProduct ? handleSubmitProductReason : handleSubmitReason
+            }
+            onClose={() => setShowReasonBox(false)}
+          />
+        )}
+
+        {/* Confirmation Alerts */}
         <ConfirmationAlert
           show={showAlert}
-          title="Cancel Order"
-          message="Are you sure you want to cancel the entire order?"
+          title={<div className="text-center">Cancel Order</div>}
+          message={
+            <div className="bg-gray-200 p-4 rounded-lg">
+              <p className="text-blue-500 text-center text-md">
+                We got your reason
+              </p>
+              <p className=" w-full min-h-16 py-3">{reason}</p>
+              <p className="text-red-500 ">
+                Are you sure that you want to cancel your entire order?
+              </p>
+            </div>
+          }
           onCancel={handleCancel}
           onProceed={handleProceed}
           noText="No, Keep Order"
           yesText="Yes, Cancel Order"
         />
-
         <ConfirmationAlert
           show={showProductAlert}
-          title="Cancel Product"
-          message={`Are you sure you want to cancel ${
-            selectedProduct?.productName || "this product"
-          }?`}
+          title={<div className="text-center">Cancel Product</div>}
+          message={
+            <div className="bg-gray-200 p-4 rounded-lg">
+              <p className="text-blue-500 text-center text-md">
+                We got your reason
+              </p>
+              <p className=" w-full min-h-16 py-3">{reason}</p>
+              <p className="text-red-500 ">
+                Are you sure you want to cancel{" "}
+                {selectedProduct?.productName || "this product"}?
+              </p>
+            </div>
+          }
           onCancel={handleCancel}
           onProceed={handleProductCancel}
           noText="No, Keep Product"
           yesText="Yes, Cancel Product"
         />
+
+        {/* Return Reason Modal */}
+        {showReturnModal && (
+          <ReasonMessageBox
+            title="Return Product"
+            onSubmit={handleReturnRequest}
+            onClose={handleReturnModalClose}
+            submitKey="Submit Return Request"
+            closeKey="Cancel"
+            placeholder="Please provide a reason for returning this product..."
+          />
+        )}
       </div>
     </div>
   );

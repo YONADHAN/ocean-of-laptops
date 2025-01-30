@@ -57,7 +57,7 @@ const Pagination = ({
   };
 
   return (
-    <div className="mt-4 flex items-center justify-between w-11/12 fixed bottom-5" >
+    <div className="mt-4 flex items-center justify-between w-11/12 " >
       <span className="text-sm text-gray-600">
         Page {currentPage} of {totalPages}
       </span>

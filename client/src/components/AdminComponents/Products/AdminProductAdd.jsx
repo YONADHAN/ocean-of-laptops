@@ -68,7 +68,7 @@ const ProductAdd = () => {
     weight: "",
     ports: "",
     regularPrice: "",
-    salePrice: "",
+    offer: "",
     quantity: "",
     description: "",
     category: "",
@@ -398,7 +398,7 @@ const ProductAdd = () => {
 
       console.log("updatedformdata is ", updatedFormData);
       if (
-        updatedFormData.salePrice < 0 ||
+        updatedFormData.offer < 0 || updatedFormData.offer >100 ||
         updatedFormData.regularPrice < 0 ||
         updatedFormData.quantity < 0
       ) {
@@ -856,21 +856,25 @@ const ProductAdd = () => {
                   <div className="text-red-500">{error.regularPrice}</div>
                 ) : null}
               </div>
+
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Sale Price
+                  Offer Percentage
                 </label>
                 <input
                   type="number"
-                  name="salePrice"
-                  value={formData.salePrice}
+                  name="offer"
+                  value={formData.offer}
                   onChange={handleInputChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
-                {error.salePrice ? (
-                  <div className="text-red-500">{error.salePrice}</div>
+                {error.offer ? (
+                  <div className="text-red-500">{error.offer}</div>
                 ) : null}
               </div>
+
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Quantity

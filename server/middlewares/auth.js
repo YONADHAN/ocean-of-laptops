@@ -2,8 +2,7 @@
 const jwt = require("jsonwebtoken");
 const RefreshToken = require("../models/refreshTokenSchema");
 const User = require("../models/userSchema");
-// const {jwtDecode}= require("jwt-decode");
-// const Cookies = require("js-cookie")
+
 const SECRET_KEY = {
   user: process.env.JWT_USER_ACCESS_TOKEN_SECRET,
   admin: process.env.JWT_ADMIN_ACCESS_TOKEN_SECRET,
@@ -28,9 +27,10 @@ const verifyToken = (role) => {
         return res.status(400).json({ message: "Invalid role specified.", role });
       }
 
-    
+      console.log("__________from auth.js ********************************_______________token ********************************",token)
+     
       const decoded = jwt.verify(token, secretKey);
-      
+      console.log("decoded token from auth.js",decoded)
       if(!decoded) {
         res.status(401).json({message:"Token is invalid or expired.", role })
       }
@@ -40,12 +40,7 @@ const verifyToken = (role) => {
         return res.status(404).json({ message: "Refresh token not found.", role });
       }
 
-      // Check if the refresh token is expired
-      // if (refreshTokenFromDatabase.expires_at < Date.now()) {
-      //   await RefreshToken.deleteOne({ userId: decoded._id });
-      //   res.clearCookie(`${role}RefreshToken`);
-      //   return res.status(401).json({ message: "Refresh token expired.", role });
-      // }
+      
       if (refreshTokenFromDatabase.expires_at < Date.now()) {
         await RefreshToken.deleteOne({ userId: decoded._id });
         res.clearCookie(`RefreshToken`);
@@ -59,12 +54,7 @@ const verifyToken = (role) => {
         return res.status(404).json({ message: "User not found.", role });
       }
 
-      // Check if user is blocked
-      // if (user.isBlocked) {
-      //   res.clearCookie(`${role}RefreshToken`);
-      //   res.clearCookie(`${role}_access_token`)
-      //   return res.status(403).json({ message: "User is blocked.", role });
-      // }
+   
       if (user.isBlocked) {
         res.clearCookie(`RefreshToken`);
         res.clearCookie(`access_token`)

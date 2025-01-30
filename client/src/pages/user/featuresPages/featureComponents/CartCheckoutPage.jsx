@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { axiosInstance } from "../../../../api/axiosConfig";
-import {cartService, authService, checkoutService} from '../../../../apiServices/userApiServices'
+import {
+  cartService,
+  authService,
+  checkoutService,
+} from "../../../../apiServices/userApiServices";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import AddAddress from "../../../../pages/user/featuresPages/featureComponents/AccountAddressManagementAddAddress";
+import EditAddress from "../../../../pages/user/featuresPages/featureComponents/AccountAddressManagementEditAddress";
+import CouponCard from "../../../../components/UserComponents/coupons/couponCard";
+import PaymentFailure from "../../../../pages/others/PaymentFailure";
 const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -19,11 +26,24 @@ const Checkout = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [showAddressForm, setAddressForm] = useState(false);
   const [addressesLoading, setAddressesLoading] = useState(true);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("false");
+  const [showEditAddressForm, setShowEditAddressForm] = useState(false);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [appliedCouponCode, setAppliedCouponCode] = useState("");
+  const [finalAmount, setFinalAmount] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [paymentFailureModal, setPaymentFailureModal] = useState(false);
+  const [orderDetails, setOrderDetails] = useState({})
+
+  const toggleModal = () => setPaymentFailureModal(!paymentFailureModal);
+
   const navigate = useNavigate();
   useEffect(() => {
     fetchAddresses();
     fetchCart();
     fetchCartData();
+    fetchWalletBalance();
   }, [navigate]);
   const fetchCartData = async () => {
     try {
@@ -40,7 +60,6 @@ const Checkout = () => {
       const response = await cartService.getCartData(userId);
       if (response.status === 200 && response.data.success) {
         setCartData(response.data.cart);
-      
       } else {
         toast.error(response.data.message || "Failed to fetch cart data");
       }
@@ -59,9 +78,9 @@ const Checkout = () => {
       }
 
       const decoded = jwtDecode(token);
-     
+
       const userId = decoded._id;
-       const response = await cartService.getCart({userId});
+      const response = await cartService.getCart({ userId });
       if (!response.data.success) {
         toast.error(response.data.message || "Failed to fetch cart");
         setCart({ items: [], subTotal: 0, finalTotal: 0 });
@@ -84,10 +103,31 @@ const Checkout = () => {
     }
   };
 
+  const fetchWalletBalance = async () => {
+    try {
+      const token = Cookies.get("access_token");
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
+      }
+
+      const decoded = jwtDecode(token);
+
+      const userId = decoded._id;
+      const wallet = await axiosInstance.post("/wallet_balance", { userId });
+      if (wallet.status === 200) {
+        toast.success("Wallet balance fetched successfully");
+        setWalletBalance(wallet.data.balance);
+      }
+    } catch (error) {
+      console.error("Error fetching wallet balance:", error);
+      // toast.error("Failed to fetch wallet balance");
+    }
+  };
+
   const goToAddAddresses = () => {
     setWithAddresses(true);
     setAddressForm(true);
-   
   };
   const handleSuccess = () => {
     setAddressForm(false);
@@ -140,17 +180,20 @@ const Checkout = () => {
     const userId = decoded._id;
     try {
       const response = await axiosInstance.post("/refresh_cart", { userId });
-   
+
       if (response.data.success) {
         toast.success("Cart refreshed successfully");
       }
-     
-      return response; 
+
+      return response;
     } catch (error) {
-      toast.error("You are not allowed to place order on this account. Please contact our administrator.");
-      throw error; 
+      toast.error(
+        "You are not allowed to place order on this account. Please contact our administrator."
+      );
+      throw error;
     }
   };
+
 
   const indianCurrencyFormatter = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -162,19 +205,17 @@ const Checkout = () => {
     setModalVisible(false);
     navigate("/user/home");
   };
-  const handlePlaceOrder = async () => {
-    const res = await cartRefresh();
-    if (res.data.blockedProducts && res.data.blockedProducts.length > 0) {
-      setBlockedProducts(res.data.blockedProducts);
-      setModalVisible(true);
-      return;
-    }
 
-    if (paymentMethod === "Cash on Delivery") {
-      setPaymentStatus("Pending");
-    }
+  const handlePlaceOrder = async () => {
+        
     try {
-      setLoading(true);
+      const res = await cartRefresh();
+      if (res.data.blockedProducts?.length > 0) {
+        setBlockedProducts(res.data.blockedProducts);
+        setModalVisible(true);
+        return;
+      }
+
       if (!selectedAddress) {
         toast.error("Please select a delivery address");
         return;
@@ -211,25 +252,138 @@ const Checkout = () => {
           isDefault: selectedAddress.isDefault || false,
         },
         paymentMethod,
-        shippingFee: 15,
-        totalAmount: cartData.netTotal || 0,
-        totalDiscount: cartData.totalDiscount,
-        couponDiscount: 0,
         paymentStatus,
+        shippingFee: 15,
+        orderedAmount: cartData.netTotal + 15 || 0,
+        totalAmount: finalAmount > 0 ? finalAmount : cartData.netTotal || 0,
+        totalDiscount: cartData.totalDiscount,
+        couponDiscount: couponDiscount || 0,
       };
 
-     
-      const response = await checkoutService.checkout(orderData);
-      if (response.status === 200) {
-        toast.success("Order placed successfully");
-        navigate(`confirmation/${response.data.orderId}`);
-        clearCart();
+      setLoading(true);
+
+      if (paymentMethod === "Razor pay") {
+        try {
+          const { data: razorpayOrder } = await axiosInstance.post(
+            "/create_razorpay_order",
+            {
+               amount: orderData.totalAmount,
+            }
+          );
+
+          const options = {
+            key: "rzp_test_2aUGLgE6VrGTVa",
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: "Ocean of Laptop",
+            description: "Payment for order",
+            order_id: razorpayOrder.id,
+            retry: {
+              enabled: false,
+            },
+            handler: async function (response) {
+              try {
+                const verifyRes = await axiosInstance.post(
+                  "/verify_razorpay_payment",
+                  {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                  }
+                );
+
+                if (verifyRes.data.success) {
+                  orderData.razorpayPaymentId = response.razorpay_payment_id;
+                  orderData.paymentStatus = "Completed";
+                  const finalOrder = await checkoutService.checkout(orderData);
+                  if (finalOrder.status === 200) {
+                    toast.success("Order placed successfully");
+                    navigate(`confirmation/${finalOrder.data.orderId}`);
+                    clearCart();
+                  }
+                } else {                 
+                  console.log("Payment verification failed")
+                  setPaymentFailureModal(true);
+                }
+              } catch (err) {
+                console.error("Error verifying payment:", err);              
+                setPaymentFailureModal(true);
+              }
+            },
+            prefill: {
+              name: selectedAddress.name,
+              email: selectedAddress.email,
+              contact: selectedAddress.phone,
+            },
+            notes: {
+              address: `${selectedAddress.areaStreet}, ${selectedAddress.city}`,
+            },
+            theme: {
+              color: "#3399cc",
+            },
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.on("payment.failed", async function (response) {
+            orderData.razorpayPaymentId =  response.razorpay_payment_id
+            orderData.paymentStatus = "Pending";
+            const finalOrder = await checkoutService.checkout(orderData);//-----------------------------------------added to successfully save the order
+            console.log(orderData)
+            if (finalOrder.status === 200) {
+              toast.success("Order placed successfully");
+              // navigate(`confirmation/${finalOrder.data.orderId}`);
+              clearCart();
+            }
+          
+            console.log("finalOrder placed successfully", finalOrder);
+            const orderId = finalOrder.data.orderId;
+            const mongodbId = finalOrder.data.orderData._id;
+            setOrderDetails({orderId,mongodbId});
+            setPaymentFailureModal(true);
+            clearCart();
+          });
+
+          rzp.open();
+        } catch (error) {
+          console.error("Error initializing Razorpay:", error);
+          toast.error("Failed to initialize payment");
+        }
+      } else {
+        orderData.paymentStatus = "Completed";
+        const finalOrder = await checkoutService.checkout(orderData);
+        if (finalOrder.status === 200) {
+          toast.success("Order placed successfully");
+          console.log("final order data: " + finalOrder);
+          navigate(`confirmation/${finalOrder.data.orderId}`);
+          clearCart();
+        }
       }
+
+      try {
+        const coupon = await axiosInstance.post("/apply_coupon_ultimate", {
+          userId: decoded._id,
+          couponCode: appliedCouponCode,
+        });
+      } catch (error) {}
     } catch (error) {
+      console.error("Error placing order:", error);
       toast.error(error.response?.data?.message || "Failed to place order");
     } finally {
       setLoading(false);
     }
+  };
+
+
+
+  
+  // const orderDetails = {
+  //   orderId: "ORD12345",
+  //   itemName: "Example Product",
+  // };
+
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
   };
 
   const clearCart = () => {
@@ -243,6 +397,19 @@ const Checkout = () => {
       </div>
     );
   }
+
+  const handleCouponApply = (discount, code) => {
+    setCouponDiscount(discount);
+    setAppliedCouponCode(code);
+    setFinalAmount(cartData.netTotal - discount);
+    setAppliedCoupon(true);
+  };
+  const handleCouponClear = () => {
+    setCouponDiscount(0);
+    setAppliedCouponCode("");
+    setFinalAmount(cartData.netTotal);
+    setAppliedCoupon(false);
+  };
 
   const AddressForm = ({ data }) => (
     <div
@@ -260,6 +427,7 @@ const Checkout = () => {
           onChange={() => handleAddressSelect(data)}
           className="mt-1 mr-4"
         />
+
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <h3 className="font-medium">{data.flatHouseNo}</h3>
@@ -278,6 +446,15 @@ const Checkout = () => {
           </p>
           <p className="text-sm text-gray-600 mt-1">Phone: {data.phone}</p>
         </div>
+        {/* <button
+          className="px-4 py-1 bg-blue-500 rounded-lg text-white"
+          onClick={() => {
+            setShowEditAddressForm(true);
+            setSelectedAddress(data);
+          }}
+        >
+          Edit
+        </button> */}
       </div>
     </div>
   );
@@ -308,6 +485,18 @@ const Checkout = () => {
     return (
       <div>
         <AddAddress redirectToCheckout={true} onSuccess={handleSuccess} />
+      </div>
+    );
+  }
+
+  if (showEditAddressForm) {
+    return (
+      <div>
+        <EditAddress
+          redirectToCheckout={true}
+          onSuccess={handleSuccess}
+          addressId={selectedAddress._id}
+        />
       </div>
     );
   }
@@ -369,6 +558,14 @@ const Checkout = () => {
         </div>
       )}
 
+      {paymentFailureModal && (
+        <PaymentFailure
+          isOpen={paymentFailureModal}
+          onClose={toggleModal}
+          orderDetails={orderDetails}
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="border rounded-lg p-4">
@@ -412,13 +609,18 @@ const Checkout = () => {
                     onChange={() => setPaymentMethod(method.id)}
                     className="mt-1 mr-4"
                   />
-                  <div>
-                    <div className="font-medium">{method.label}</div>
-                    <p className="text-sm text-gray-600">
-                      {method.id === "Cash on Delivery"
-                        ? "Pay when you receive your order"
-                        : `Pay securely with ${method.label}`}
-                    </p>
+                  <div className="flex justify-between w-full">
+                    <div>
+                      <div className="font-medium">{method.label}</div>
+                      <p className="text-sm text-gray-600">
+                        {method.id === "Cash on Delivery"
+                          ? "Pay when you receive your order"
+                          : `Pay securely with ${method.label}`}
+                      </p>
+                    </div>
+                    <div >
+                      {method.id === "wallet" && <div className="flex text-nowrap"> Current Balance is :<div className="font-bold">{ formatCurrency(walletBalance)}</div></div>}
+                    </div>
                   </div>
                 </label>
               ))}
@@ -438,7 +640,7 @@ const Checkout = () => {
               </div>
 
               <div className="flex justify-between text-sm">
-                <span>Discount:</span>
+                <span>Offer :</span>
                 <span>
                   -
                   {indianCurrencyFormatter.format(
@@ -447,17 +649,41 @@ const Checkout = () => {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
+                <span>Coupon Discount:</span>
+                <span>
+                  -{indianCurrencyFormatter.format(Number(couponDiscount))}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-sm">
                 <span>Shipping Fee:</span>
                 <span>₹15.00</span>
               </div>
+              {/* <div className="border-t pt-3 flex justify-between font-semibold">
+                <span>Total:</span>
+                <span>
+                  {indianCurrencyFormatter.format(
+                    (cart.finalTotal + 15 - couponDiscount||0).toFixed(2)
+                  )}
+                  
+                </span>
+              </div> */}
               <div className="border-t pt-3 flex justify-between font-semibold">
                 <span>Total:</span>
                 <span>
                   {indianCurrencyFormatter.format(
-                    (cart.finalTotal + 15).toFixed(2)
+                    finalAmount > 0
+                      ? (finalAmount + 15).toFixed(2)
+                      : (cartData.netTotal + 15).toFixed(2)
                   )}
                 </span>
               </div>
+
+              <CouponCard
+                totalAmount={cartData.netTotal}
+                onApplyCoupon={handleCouponApply}
+                onClearCoupon={handleCouponClear}
+              />
             </div>
             <button
               className="w-full mt-4 py-2 bg-yellow-400 rounded hover:bg-yellow-500 font-medium disabled:opacity-50"

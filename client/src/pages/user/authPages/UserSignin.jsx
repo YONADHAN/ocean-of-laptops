@@ -61,7 +61,7 @@ const Signin = () => {
         toast.success("Sign-in successful");
 
         Cookies.set("access_token", accessToken, {
-          expires: 1,
+          expires: 1/96,
           secure: false,
           sameSite: "Strict",
           // path: ''
@@ -141,7 +141,7 @@ const Signin = () => {
               </p>
             </div>
             <button
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 w-full rounded focus:outline-none focus:shadow-outline"
+              className="bg-gray-500 mb-2 hover:bg-gray-700 text-white font-bold py-2 px-4 w-full rounded focus:outline-none focus:shadow-outline"
               type="submit"
             >
               Log In
@@ -149,6 +149,7 @@ const Signin = () => {
           </form>
 
           <GoogleButton role="user" />
+
           <p className="text-gray-700 mt-4 text-center">
             Don’t have an account?{" "}
             <a

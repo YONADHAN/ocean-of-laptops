@@ -72,7 +72,9 @@ const checkoutService = {
 //wishlist
 const wishlistService = {
   addToWishlist: (userId, productId) => axiosInstance.post('/add_to_wishlist', {userId, productId}),
-  removeFromWishlist: (userId, productId) => axiosInstance.post('/remove_from_wishlist', {userId, productId})
+  removeFromWishlist: (userId, productId) => axiosInstance.post('/remove_from_wishlist', {userId, productId}),
+  getWishlistStatus: (userId, productId) => axiosInstance.post('/check_if_in_wishlist', {userId, productId}),
+  getWishlists: (data) => axiosInstance.post('/get_wishlists', data)
 }
 
 export { authService, productService, cartService, orderService ,checkoutService ,wishlistService};

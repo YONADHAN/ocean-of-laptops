@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { axiosInstance } from "../../../api/axiosConfig";
-import {orderService} from '../../../apiServices/adminApiServices'
+import { orderService } from "../../../apiServices/adminApiServices";
 import { toast } from "sonner";
 import ConfirmationAlert from "../../MainComponents/ConformationAlert";
 
@@ -12,12 +12,17 @@ const AdminOrderDetails = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
+  const [
+    showReturnRequestConfirmationModal,
+    setReturnRequestConfirmationModal,
+  ] = useState(false);
+  const [selectedReturnRequest, setSelectedReturnRequest] = useState(null);
+
   const { orderId } = useParams();
 
   const fetchOrder = async () => {
     try {
-    
-      const {data} = await orderService.getOrderDetails(orderId);
+      const { data } = await orderService.getOrderDetails(orderId);
       if (data.success) {
         setOrderData(data.order);
       } else {
@@ -51,6 +56,101 @@ const AdminOrderDetails = () => {
     );
   };
 
+  const handleReturnRequestView = async (returnRequest, itemId) => {
+    setSelectedReturnRequest({
+      ...returnRequest,
+      itemId,
+    });
+    
+    setReturnRequestConfirmationModal(true);
+  };
+  
+  const handleReturnRequestAction = async (decision) => {
+    if (!selectedReturnRequest) return;
+
+    try {
+      setUpdating(true);
+      console.log("handleReturnRequest", decision);
+      console.log("handleReturnRequest", selectedReturnRequest);
+      const response = await axiosInstance.post(
+        "/admin/return_request_management",
+        {
+          orderId,
+          itemId: selectedReturnRequest.itemId,
+          decision,
+          reason: selectedReturnRequest.reason,
+        }
+      );
+
+      if (response.data.success) {
+        setOrderData((prevData) => ({
+          ...prevData,
+          orderItems: prevData.orderItems.map((item) => {
+            if (item.product === selectedReturnRequest.itemId) {
+              return {
+                ...item,
+                returnRequest: {
+                  ...item.returnRequest,
+                  requestStatus:
+                    decision === "accepted" ? "Approved" : "Rejected",
+                  updatedAt: new Date().toISOString(),
+                },
+              };
+            }
+            return item;
+          }),
+        }));
+
+        toast.success(
+          `Return request ${
+            decision === "accepted" ? "approved" : "rejected"
+          } successfully`
+        );
+        window.location.reload();
+      } else {
+        throw new Error(
+          response.data.message || `Failed to ${decision} return request`
+        );
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setUpdating(false);
+      setReturnRequestConfirmationModal(false);
+      setSelectedReturnRequest(null);
+    }
+  };
+  const getReturnRequestStatusBadge = ( itemId, returnRequest) => {
+    if (!returnRequest) return null;
+
+    const statusColors = {
+      Pending: "bg-orange-400 hover:bg-orange-500",
+      Approved: "bg-green-400",
+      Rejected: "bg-red-400",
+    };
+
+    return (
+      <div
+        className={`py-1 rounded-full ${
+          statusColors[returnRequest.requestStatus]
+        } ${
+          returnRequest.requestStatus === "Pending"
+            ? "hover:cursor-pointer"
+            : ""
+        }`}
+        onClick={() =>
+          returnRequest.requestStatus === "Pending" &&
+          handleReturnRequestView(returnRequest, itemId)
+          
+        }
+      >
+        <p className="text-white text-center px-2">
+          Return {returnRequest.requestStatus}
+        </p>
+      </div>
+    );
+  };
+
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
 
@@ -65,11 +165,10 @@ const AdminOrderDetails = () => {
     setUpdating(true);
 
     try {
-  
       const status = pendingStatusChange;
-      console.log("orderid : " + orderId)
-      console.log("status : " + status)
-      const {data} = await orderService.updateOrderStatus(orderId, status);
+      console.log("orderid : " + orderId);
+      console.log("status : " + status);
+      const { data } = await orderService.updateOrderStatus(orderId, status);
 
       if (data.success) {
         if (data.order) {
@@ -93,7 +192,7 @@ const AdminOrderDetails = () => {
       toast.error(
         // error.response?.data?.message ||
         //   error.message ||
-          "Failed to update order status"
+        "Failed to update order status"
       );
     } finally {
       setUpdating(false);
@@ -167,7 +266,6 @@ const AdminOrderDetails = () => {
 
       {/* Order Summary Card */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-  
         <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -190,9 +288,15 @@ const AdminOrderDetails = () => {
           </div>
           <div>
             <p className="mb-2">
-              <span className="font-semibold">Total Amount:</span>{" "}
+              <span className="font-semibold">Ordered Amount:</span>{" "}
               <span className="text-lg">
-                ₹{orderData.totalAmount?.toLocaleString()}
+                ₹{orderData.orderedAmount?.toLocaleString()}
+              </span>
+            </p>
+            <p className="mb-2">
+              <span className="font-semibold">Payable Amount:</span>{" "}
+              <span className="text-lg">
+                ₹{orderData.payableAmount?.toLocaleString()}
               </span>
             </p>
             <div className="mb-2 flex gap-2">
@@ -277,7 +381,6 @@ const AdminOrderDetails = () => {
               </div>
             </div>
             <div>
-              
               <div className="mb-4">
                 <p className="text-sm font-medium text-gray-600">City:</p>
                 <p className="text-base font-semibold text-gray-800">
@@ -301,7 +404,38 @@ const AdminOrderDetails = () => {
         )}
       </div>
 
+      <ConfirmationAlert
+        show={showReturnRequestConfirmationModal}
+        title={<div className="text-blue-600 text-center mb-3 text-2xl">Return Request Management</div>}
+        message={
+          selectedReturnRequest ? (
+            <div className="space-y-4">
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Reason for Return</h3>
+                <div className="text-gray-600">{selectedReturnRequest.reason}</div>
+              </div>
+              <div className="px-4 text-yellow-600">
+                <div>Are you sure that you want to accept this return request?</div>
+                <div className="text-[10px] text-gray-500">
+                  (***Once accepted or rejected then the result will be irreversible)
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+              <div className="mt-2 text-gray-600">Loading return request details...</div>
+            </div>
+          )
+        }
+        onCancel={() => handleReturnRequestAction("rejected")}
+        onProceed={() => handleReturnRequestAction("accepted")}
+        noText="Reject "
+        yesText="Accept "
+      />
+
       {/* Order Items Card */}
+
       <div className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Order Items</h2>
         <div className="overflow-x-auto">
@@ -313,11 +447,12 @@ const AdminOrderDetails = () => {
                 <th className="px-4 py-3 text-right">Price</th>
                 <th className="px-4 py-3 text-right">Total</th>
                 <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Return Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {orderItems?.map((item, index) => (
-                <tr key={item._id || index}>
+              {orderData.orderItems?.map((item) => (
+                <tr key={item._id}>
                   <td className="px-4 py-3">
                     <div className="flex items-center">
                       <img
@@ -344,6 +479,10 @@ const AdminOrderDetails = () => {
                       {item.orderStatus}
                     </span>
                   </td>
+                  <td className="px-4 py-3">
+                    {item.returnRequest &&
+                      getReturnRequestStatusBadge(item._id, item.returnRequest)}{/**######################################################## */}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -353,18 +492,18 @@ const AdminOrderDetails = () => {
                   Total Amount:
                 </td>
                 <td className="px-4 py-3 text-right font-semibold">
-                  ₹{orderData.totalAmount?.toLocaleString()}
+                  ₹{orderData.orderedAmount?.toLocaleString()}
                 </td>
-                <td></td>
+                <td colSpan="2"></td>
               </tr>
               <tr>
                 <td colSpan="3" className="px-4 py-3 text-right font-semibold">
                   Payable Amount:
                 </td>
                 <td className="px-4 py-3 text-right font-semibold">
-                  ₹{payableAmount()}
+                  ₹{orderData.payableAmount?.toLocaleString()}
                 </td>
-                <td></td>
+                <td colSpan="2"></td>
               </tr>
             </tfoot>
           </table>

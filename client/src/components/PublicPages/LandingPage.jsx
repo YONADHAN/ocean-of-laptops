@@ -40,9 +40,9 @@ const HomePage = () => {
       </div>
 
       {/* Product Collections */}
-      <ProductCollection categoryId={"674eb9681b18926c0b1b655f"} categoryName={"Latest Collection"} />
-      <ProductCollection categoryId={"674eb91c1b18926c0b1b6559"} categoryName={"New Arrival"} />
-      <ProductCollection categoryId={"674ef587e00b81c89366f604"} categoryName={"Office Collection"} />
+      <ProductCollection categoryId={"674eb9681b18926c0b1b655f"} categoryName={"Latest Collection"} fromLandingPage = {true}/>
+      <ProductCollection categoryId={"674eb91c1b18926c0b1b6559"} categoryName={"New Arrival"} fromLandingPage = {true}/>
+  
 
       {/* Footer */}
       <Footer />

@@ -431,7 +431,10 @@ export default function ShoppingCart() {
                 )}
               </span>
             </div>
-            <div className="flex gap-2 mt-6">
+
+
+
+            {/* <div className="flex gap-2 mt-6">
               <input
                 type="text"
                 placeholder="Add coupon code"
@@ -442,7 +445,9 @@ export default function ShoppingCart() {
               <button className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">
                 Apply
               </button>
-            </div>
+            </div> */}
+
+
 
             <button
               onClick={goToCheckOutPage}
@@ -454,5 +459,7 @@ export default function ShoppingCart() {
         </div>
       </div>
     </div>
+    
   );
 }
+

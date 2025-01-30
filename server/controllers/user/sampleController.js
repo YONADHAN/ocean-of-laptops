@@ -1,135 +1,103 @@
+const handlePlaceOrder = async () => {
+  if (paymentMethod === "Razor pay") {
+    try {
+      setLoading(true);
 
+      if (!selectedAddress) {
+        toast.error("Please select a delivery address");
+        return;
+      }
 
-const path = require("path");
-const sharp = require("sharp");
-const Product = require("../../models/productSchema");
-const Category = require("../../models/categorySchema");
-const Cart = require("../../models/cartSchema");
-const mongoose = require("mongoose");
-const Cookies = require("js-cookie");
+      const token = Cookies.get("access_token");
+      const decoded = jwtDecode(token);
 
+      // Fetch Razorpay order from backend
+      const response = await axiosInstance.post("/create-order", {
+        amount: finalAmount > 0 ? finalAmount : cartData.netTotal,
+      });
 
-const get_filter_options = async (req, res) => {
-  try {
-    // Fetch distinct filter options from your database
-    const filterOptions = {
-      'processor.brand': await Product.distinct('processor.brand'),
-      'processor.model': await Product.distinct('processor.model'),
-      'processor.generation': await Product.distinct('processor.generation'),
-      'ram.size': await Product.distinct('ram.size'),
-      'ram.type': await Product.distinct('ram.type'),
-      'storage.type': await Product.distinct('storage.type'),
-      'storage.capacity': await Product.distinct('storage.capacity'),
-      'graphics.model': await Product.distinct('graphics.model'),
-      'graphics.vram': await Product.distinct('graphics.vram'),
-      'display.size': await Product.distinct('display.size'),
-      'display.resolution': await Product.distinct('display.resolution'),
-      'display.refreshRate': await Product.distinct('display.refreshRate'),
-      operatingSystem: await Product.distinct('operatingSystem'),
-      brand: await Product.distinct('brand'),
-      color: await Product.distinct('color'),
-      status: await Product.distinct('status'),
-      category: await Category.find({
-        isListed: true,
-        status: 'active',
-      }).select('name _id'),
-    };
+      const { id: order_id, amount, currency } = response.data;
 
-    res.json(filterOptions);
-  } catch (error) {
-    console.error('Filter options error:', error);
-    res.status(500).json({
-      message: 'Error retrieving filter options',
-      error: error.message,
-    });
+      const options = {
+        key: "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay key
+        amount: amount,
+        currency: currency,
+        name: "Your Shop Name",
+        description: "Order Payment",
+        order_id: order_id,
+        handler: async function (response) {
+          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
+
+          // Verify payment on backend
+          const verifyResponse = await axiosInstance.post("/verify-payment", {
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+          });
+
+          if (verifyResponse.data.success) {
+            toast.success("Payment successful! Placing your order...");
+            await placeOrder();
+          } else {
+            toast.error("Payment verification failed.");
+          }
+        },
+        prefill: {
+          name: decoded.name,
+          email: decoded.email,
+          contact: decoded.phone,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Error with Razorpay payment:", error);
+      toast.error("Failed to process payment");
+    } finally {
+      setLoading(false);
+    }
+  } else {
+    // Handle other payment methods
+    await placeOrder();
   }
 };
 
+const placeOrder = async () => {
+  try {
+    const token = Cookies.get("access_token");
+    const decoded = jwtDecode(token);
 
+    const orderData = {
+      user: decoded._id,
+      orderItems: cart.items.map((item) => ({
+        product: item.productId,
+        productName: item.productName,
+        productImage: item.productImage,
+        quantity: item.quantity,
+        price: item.price,
+        totalPrice: item.totalPrice,
+        discount: item.discount || 0,
+      })),
+      shippingAddress: { ...selectedAddress },
+      paymentMethod,
+      paymentStatus: "Paid",
+      shippingFee: 15,
+      orderedAmount: finalAmount > 0 ? finalAmount + 15 : cartData.netTotal + 15,
+      totalDiscount: cartData.totalDiscount,
+      couponDiscount: couponDiscount || 0,
+    };
 
-const filter_products = async (req, res) => {
-    try {
-        // const {filter} = req.query
-        const filter = {
-          colors: {
-            Black: true,
-          },
-          displayRefreshRates: {
-            "60": true,
-          },
-          priceRange: {
-            minPrice: 0,
-            maxPrice: 209722,
-          },
-          operatingSystems: {
-            "Windows 11": true,
-          },
-          processorBrands: {
-            Apple: false,
-            AMD: false,
-            Intel: true,
-          },
-        };
-        
-        let query = {};
-        
-        for (let key in filter) {
-          if (typeof filter[key] === "object" && !Array.isArray(filter[key])) {
-            for (let subkey in filter[key]) {
-              if(filter[key][subkey]){
-                let temp = `${key}.${subkey}`;
-                query[temp] = filter[key][subkey];
-                // query[subkey] = filter[key][subkey];
-              }
-            }
-          } else {
-            if(filter[key]) {
-              query[key] = filter[key];
-            }
-          }
-        }
-
-        
-        console.log(query);
-        
-          console.log(JSON.stringify(query));
-          const sortOptions = {
-            'price:asc': { regularPrice: 1 },
-            'price:desc': { regularPrice: -1 },
-            'rating:desc': { averageRating: -1 },
-            'createdAt:desc': { createdAt: -1 },
-            'name:asc': { productName: 1 },
-            'name:desc': { productName: -1 },
-          };
-          const sortParam = req.query.sort || "createdAt:desc";
-          const sortQuery = sortOptions[req.query.sort] || sortOptions['createdAt:desc'];
-
-          // Handle pagination
-          const page = parseInt(req.query.page) || 1;
-          const limit = parseInt(req.query.limit) || 10;
-          const skip = (page - 1) * limit;
-
-          const queryResults = await Product.find(query)
-          .sort(sortQuery)
-          .skip(skip)
-          .limit(limit)
-          .populate({
-              path: 'category',
-              match: { isBlocked: false }
-          });
-       
-          const totalProducts = await Product.countDocuments(query);
-          const totalPages = Math.ceil(totalProducts / limit);
-          res.status(200).json({success: true, message: 'Products successfully fetched', products: queryResults, totalProducts, totalPages, currentPage: page, sortParam});
-      
-
-          
-    } catch (error) {
-        res.status(500).json({success: false, error: error.message, message: "internal server error"});
+    const response = await checkoutService.checkout(orderData);
+    if (response.status === 200) {
+      toast.success("Order placed successfully");
+      navigate(`/confirmation/${response.data.orderId}`);
+      clearCart();
     }
-}
-
-module.exports = {
-  get_filter_options,
-  filter_products,
-}
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to place order");
+  }
+};

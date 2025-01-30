@@ -1,115 +1,22 @@
 const path = require("path");
 const sharp = require("sharp");
-const Product = require("../../models/productSchema"); // Assuming Product model is in this path
-const Category = require("../../models/categorySchema"); // Assuming Category model is in this path
+const Product = require("../../models/productSchema"); 
+const Category = require("../../models/categorySchema"); 
 
 
-// const add_product = async (req, res) => {
-//   try {
-//       const  productData = req.body;
-//       console.log('Received Product Data:', productData); // Log received data for debugging
-
-//       // Validate required fields
-//       const requiredFields = [
-//           'productName', 'brand', 'modelNumber', 'category', 
-//           'regularPrice', 'quantity', 'processor', 'ram', 'storage'
-//       ];
-
-//       for (let field of requiredFields) {
-//           if (!productData[field]) {
-//               return res.status(400).json({
-//                   success: false, 
-//                   message: `Missing required field: ${field}`
-//               });
-//           }
-//       }
-
-//       // Check if the product already exists
-//       const productExists = await Product.findOne({
-//           productName: productData.productName,
-//           modelNumber: productData.modelNumber,
-//       });
-
-//       if (productExists) {
-//           return res.status(400).json({
-//               success: false, 
-//               message: "Product already exists"
-//           });
-//       }
-
-//       // Validate category
-//       const category = await Category.findById(productData.category);
-//       if (!category) {
-//           return res.status(400).json({
-//               success: false, 
-//               message: "Invalid category"
-//           });
-//       }
-
-//       // Prepare product data for saving
-//       const newProductData = {
-//           productName: productData.productName,
-//           brand: productData.brand,
-//           modelNumber: productData.modelNumber,
-//           processor: {
-//               brand: productData.processor.brand || '',
-//               model: productData.processor.model || '',
-//               generation: productData.processor.generation || ''
-//           },
-//           ram: {
-//               size: productData.ram.size || '',
-//               type: productData.ram.type || ''
-//           },
-//           storage: {
-//               type: productData.storage.type || '',
-//               capacity: productData.storage.capacity || ''
-//           },
-//           graphics: {
-//               model: productData.graphics?.model || '',
-//               vram: productData.graphics?.vram || ''
-//           },
-//           display: {
-//               size: productData.display?.size || '',
-//               resolution: productData.display?.resolution || '',
-//               refreshRate: productData.display?.refreshRate || ''
-//           },
-//           operatingSystem: productData.operatingSystem || '',
-//           batteryLife: productData.batteryLife || '',
-//           weight: productData.weight || '',
-//           ports: productData.ports || '',
-//           regularPrice: productData.regularPrice,
-//           salePrice: productData.salePrice || productData.regularPrice,
-//           quantity: productData.quantity,
-//           description: productData.description || '',
-//           category: category._id,
-//           size: productData.size || '',
-//           color: productData.color || '',
-//           productImage: productData.productImage || '', // Assuming image URLs from frontend
-//           status: productData.status || 'Available',
-//           isBlocked: false,
-//           popularity: 0,
-//           rating: 0
-//       };
-
-//       // Create and save new product
-//       const newProduct = new Product(newProductData);
-//       await newProduct.save();
-
-//       res.status(201).json({
-//           success: true, 
-//           message: "Product added successfully",
-//           product: newProduct
-//       });
-
-//   } catch (error) {
-//       console.error("Error adding product:", error);
-//       res.status(500).json({
-//           success: false, 
-//           message: "Server error",
-//           error: error.message
-//       });
-//   }
-// };
+const salePriceCalculator = async (regularPrice, productId) => {
+  try {
+    const product = await Product.findByProductId(productId).populate('category');
+    if (!product) {
+      return false;
+    }
+    const maximumOffer = Math.max(product.offer, product.category.offer);
+    const salePrice = regularPrice - (maximumOffer * regularPrice) / 100;
+    return salePrice;
+  } catch (error) {
+    return false;
+  }
+}
 const add_product = async (req, res) => {
   try {
     const { productSubmissionData } = req.body;
@@ -151,6 +58,22 @@ const add_product = async (req, res) => {
         message: "Invalid category"
       });
     }
+    // const salePrice = await salePriceCalculator(productSubmissionData.regularPrice, productSubmissionData._id);
+    // if (!salePrice) {
+    //   return res.status(400).json({
+    //     success: false, 
+    //     message: "Failed to calculate sale price"
+    //   });
+    // }
+
+    const categoryOffer = category.offer || 0;
+    const productOffer = productSubmissionData.offer;
+    const offer = Math.max(categoryOffer, productOffer);
+    let salePrice = productSubmissionData.regularPrice;
+    if(offer){
+      salePrice = (productSubmissionData.regularPrice - (offer * productSubmissionData.regularPrice) / 100).toFixed(0);
+    }
+    productSubmissionData.salePrice = salePrice;
 
     const newProduct = new Product(productSubmissionData);
     await newProduct.save();
@@ -285,8 +208,8 @@ const updateProduct = async (req, res) => {
       }
     }
     
-    console.log('Received Product Data:', updateData); // Log received data for debugging
-    // Validate category
+    console.log('Received Product Data:', updateData); 
+   
     const category = await Category.findById(updateData.category._id);
     if (!category) {
       return res.status(400).json({
@@ -295,7 +218,7 @@ const updateProduct = async (req, res) => {
       });
     }
 
-      // Get existing product to preserve images if no new ones are provided
+ 
       const existingProduct = await Product.findById(productId);
       if (!existingProduct) {
         return res.status(404).json({
@@ -304,8 +227,11 @@ const updateProduct = async (req, res) => {
         });
       }
   
-
-    // Find the product and update
+    const productOffer = updateData.offer;
+    const categoryOffer = category.offer;
+    const offer = Math.max(categoryOffer, productOffer);
+    const salePrice = (updateData.regularPrice - (offer/100)*updateData.regularPrice).toFixed(0);
+   
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       {
@@ -339,14 +265,15 @@ const updateProduct = async (req, res) => {
         weight: updateData.weight || '',
         ports: updateData.ports || '',
         regularPrice: updateData.regularPrice,
-        salePrice: updateData.salePrice || updateData.regularPrice,
+        // salePrice: updateData.salePrice || updateData.regularPrice,
+        salePrice: salePrice,
         quantity: updateData.quantity,
         description: updateData.description || '',
         category: category._id,
         size: updateData.size || '',
         color: updateData.color || '',
         productImage: updateData.productImage || [],
-        // status: updateData.status || 'Available',
+        
         status: updateData.quantity > 0 ? 'Available' : 'Out of Stock',
       },
       { new: true, runValidators: true }
@@ -404,10 +331,37 @@ const get_product = async (req, res) => {
   }
 };
 
+const updateProductOffer = async (req, res) => {
+  try {
+    const productId = req.body.productId;
+    const offer = req.body.offer;
+    console.log("Product offer  :  ", productId,"  ", offer,"%")
+    if(offer<0 || offer>100) {
+      return res.status(400).json({message: "Invalid offer value (must be between 0 and 100)"});
+    }  
+
+    const product = await Product.findById(productId).populate('category');
+    if (!product) {
+      return res.status(404).json({message: "Product not found"});
+    }
+    const maximumOffer = Math.max(offer, product.category.offer||0);
+    const salePrice = (product.regularPrice - (maximumOffer * product.regularPrice) / 100).toFixed(0)
+    product.offer = offer;
+    product.salePrice = salePrice;
+    await product.save();
+   
+    res.status(200).json({message: "Offer updated successfully", product});
+  } catch (error) {
+    res.status(500).json({message: "Error updating offer", error: error.message});
+  }
+}
+
 module.exports = {
     add_product,
     getProducts,
     toggleBlockProduct,
     updateProduct,
-    get_product
-}
+    get_product,
+    updateProductOffer,
+  };
+

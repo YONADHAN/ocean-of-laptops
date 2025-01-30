@@ -10,6 +10,7 @@ import ProductDetailPage from '../components/MainUserComponents/MainPages/Produc
 import CollectionPage from "../components/MainUserComponents/MainPages/CollectionPage";
 import AboutUs from '../components/MainUserComponents/MainPages/AboutPage';
 import Error404Page from '../pages/others/Error404'
+import PaymentFailure from '../pages/others/PaymentFailure'
 import Filter from '../components/MainUserComponents/MainPages/productFilterPage/ProductFilterPage'
 
 
@@ -22,6 +23,7 @@ import Order from '../pages/user/featuresPages/OrderHistory';
 import Cart from '../pages/user/featuresPages/ShoppingCart';
 import Wishlist from '../pages/user/featuresPages/Wishlist';
 import Wallet from '../pages/user/featuresPages/Wallet';
+import Coupon from '../pages/user/featuresPages/Coupon';
 import Contact from '../pages/user/featuresPages/ContactUs';
 import Settings from '../pages/user/featuresPages/Settings';
 
@@ -135,9 +137,11 @@ const UserRoutes = () => {
                         <Route index element={<Cart/>}/>
                         <Route path='checkout' element={<Checkout/>}/>
                         <Route path='checkout/confirmation/:orderId' element={<OrderConfirmation/>} />
+                        <Route path ='checkout/payment-failure' element = {<PaymentFailure/>}/>
                     </Route>                    
                     <Route path='wishlist' element={<Wishlist/>}/>  
                     <Route path='wallet' element={<Wallet/>}/>  
+                    <Route path='coupon' element={<Coupon/>}/>
                     <Route path='contact_us' element={<Contact/>}/>   
                     <Route path='settings' element={<Settings/>}/>                         
                 </Route>

@@ -1,25 +1,33 @@
 
 
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiEdit2 } from "react-icons/fi";
 import { LiaUserSlashSolid, LiaUserSolid } from "react-icons/lia";
 import { axiosInstance } from "../../../api/axiosConfig";
-import {categoryService} from '../../../apiServices/adminApiServices';
-import ConfirmationAlert from "../../MainComponents/ConformationAlert"; 
+import { categoryService } from "../../../apiServices/adminApiServices";
+import ConfirmationAlert from "../../MainComponents/ConformationAlert";
 import Table from "../../../components/MainComponents/Table";
-import Pagination from "../../../components/MainComponents/Pagination"; 
+import Pagination from "../../../components/MainComponents/Pagination";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
+
 const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPercentage, setOfferPercentage] = useState("");
+  const [showOfferConfirmation, setShowOfferConfirmation] = useState(false);
+  const [selectedCategoryForOffer, setSelectedCategoryForOffer] =
+    useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    limit: 4,
+    limit: 3,
   });
   const navigate = useNavigate();
 
@@ -31,10 +39,8 @@ const CategoryPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const params = {page, limit};
+      const params = { page, limit };
       const response = await categoryService.getCategories(params);
-
-
       const data = response.data;
       setCategories(data.categories);
       setPagination((prev) => ({
@@ -51,10 +57,14 @@ const CategoryPage = () => {
 
   const handleBlock = async (categoryId, state) => {
     try {
-      const endpoint = `/admin/category_${state ? "unblock" : "block"}/${categoryId}`;
+      const endpoint = `/admin/category_${
+        state ? "unblock" : "block"
+      }/${categoryId}`;
       await axiosInstance.patch(endpoint);
       const updatedCategories = categories.map((category) =>
-        category._id === categoryId ? { ...category, isBlocked: !state } : category
+        category._id === categoryId
+          ? { ...category, isBlocked: !state }
+          : category
       );
       setCategories(updatedCategories);
     } catch (error) {
@@ -84,11 +94,60 @@ const CategoryPage = () => {
     setShowAlert(false);
     setSelectedCategory(null);
   };
+  const handleOfferSubmit = () => {
+    setShowOfferModal(false)
+    setShowOfferConfirmation(true);
+  };
+
+  const handleOfferClick = (category) => {
+    setSelectedCategoryForOffer(category);
+    setOfferPercentage(category.offer || "");
+    setShowOfferModal(true);
+  };
+
+  const confirmOfferSubmit = async () => {
+    try {
+      const categoryId = selectedCategoryForOffer._id;
+      const offer = parseFloat(offerPercentage);
+      const offerApplied = await axiosInstance.post('/admin/update_category_offer', {
+        offer,
+        categoryId,
+      });
+  
+      if (offerApplied.status === 200) {
+        if (offer === 0) {
+          toast.success(`No offer was applied for ${selectedCategoryForOffer.name}`);
+        } else {
+          toast.success(`${offer}% offer was successfully applied for ${selectedCategoryForOffer.name}`);
+        }
+      }
+  
+      const updatedCategories = categories.map((category) =>
+        category._id === selectedCategoryForOffer._id
+          ? { ...category, offer: parseFloat(offerPercentage) }
+          : category
+      );
+  
+      setCategories(updatedCategories);
+      //setShowOfferModal(false);
+      setShowOfferConfirmation(false);
+      setSelectedCategoryForOffer(null);
+      setOfferPercentage("");
+    } catch (error) {
+      console.error("Error updating offer:", error);
+      setError("Failed to update offer. Please try again.");
+    }
+  };
+  
+  const cancelOfferSubmit = () => {
+    setShowOfferConfirmation(false);
+  };
 
   const columns = [
     { label: "Category Name", key: "name" },
     { label: "Description", key: "description" },
     { label: "Status", key: "status" },
+    { label: "Offer", key: "offer" },
     { label: "Actions", key: "actions" },
   ];
 
@@ -108,7 +167,9 @@ const CategoryPage = () => {
         case "name":
           return <div className="text-sm text-gray-900">{category.name}</div>;
         case "description":
-          return <div className="text-sm text-gray-600">{category.description}</div>;
+          return (
+            <div className="text-sm text-gray-600">{category.description}</div>
+          );
         case "status":
           return (
             <span
@@ -121,6 +182,17 @@ const CategoryPage = () => {
               {category.isBlocked ? "Blocked" : "Active"}
             </span>
           );
+        case "offer":
+          return (
+            <button
+              onClick={() => handleOfferClick(category)}
+              className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                category.offer ? "bg-green-500" : "bg-red-500"
+              } text-white`}
+            >
+              {category.offer ? `${category.offer}% Off` : "Add offer"}
+            </button>
+          );
         case "actions":
           return (
             <div className="flex justify-center space-x-3 ">
@@ -128,7 +200,6 @@ const CategoryPage = () => {
                 onClick={() => handleEdit(category._id)}
                 className="text-blue-600 hover:text-blue-800 w-44"
               >
-                {/* <FiEdit2 className="w-5 h-5" /> */}
                 Edit
               </button>
               <button
@@ -136,11 +207,9 @@ const CategoryPage = () => {
                 className="text-red-600 hover:text-red-800"
               >
                 {category.isBlocked ? (
-                  //<LiaUserSolid className="text-green-600 w-5 h-5" />
-                  <div className="text-green-500  lg:w-36  lg:mr-40 ">UnBlock</div>
+                  <div className="text-green-500 lg:w-36 lg:mr-40">UnBlock</div>
                 ) : (
-                 // <LiaUserSlashSolid className="w-5 h-5" />
-                <div className="text-red-500 lg:w-36  lg:mr-40">Block</div>
+                  <div className="text-red-500 lg:w-36 lg:mr-40">Block</div>
                 )}
               </button>
             </div>
@@ -152,7 +221,6 @@ const CategoryPage = () => {
 
     return (
       <>
-        {/* Mobile view */}
         <div className="md:hidden col-span-4 space-y-4 p-4 border-b">
           {columns.map((column) => (
             <div key={column.key} className="flex justify-between items-start">
@@ -162,7 +230,6 @@ const CategoryPage = () => {
           ))}
         </div>
 
-        {/* Desktop view */}
         {columns.map((column) => (
           <div key={column.key} className="hidden md:block p-4">
             {renderContent(column.key)}
@@ -185,7 +252,9 @@ const CategoryPage = () => {
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <h2 className="text-2xl font-semibold text-red-600">{error}</h2>
         <button
-          onClick={() => fetchCategories(pagination.currentPage, pagination.limit)}
+          onClick={() =>
+            fetchCategories(pagination.currentPage, pagination.limit)
+          }
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
           Try Again
@@ -221,7 +290,9 @@ const CategoryPage = () => {
         <Pagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
-          onPageChange={(page) => setPagination((prev) => ({ ...prev, currentPage: page }))}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, currentPage: page }))
+          }
         />
       </div>
       <ConfirmationAlert
@@ -235,9 +306,50 @@ const CategoryPage = () => {
         noText="Cancel"
         yesText="Confirm"
       />
+
+      <ConfirmationAlert
+        show={showOfferConfirmation}
+        title="Confirm Offer Application"
+        message={`Are you sure you want to apply a ${offerPercentage}% offer to ${selectedCategoryForOffer?.name}?`}
+        onCancel={cancelOfferSubmit}
+        onProceed={confirmOfferSubmit}
+        noText="Cancel"
+        yesText="Confirm"
+      />
+
+      {/* Offer Modal */}
+      {showOfferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">Set Offer Percentage</h3>
+            <input
+              type="number"
+              value={offerPercentage}
+              onChange={(e) => setOfferPercentage(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg mb-4"
+              placeholder="Enter offer percentage"
+              min="0"
+              max="100"
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowOfferModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleOfferSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default CategoryPage;
-
