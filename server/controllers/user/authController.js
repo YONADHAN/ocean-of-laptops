@@ -169,7 +169,7 @@ const resend_otp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Validate email format
+    
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({
         success: false,
@@ -177,7 +177,7 @@ const resend_otp = async (req, res) => {
       });
     }
 
-    // Find user by email
+
     const user = await User.findOne({ email });
     if (user?.isVerified) {
       return res.status(400).json({
@@ -246,7 +246,7 @@ const user_signin = async (req, res) => {
       return res.status(404).json({ message: "You are not the user" });
     }
 
-    // Check if the user is verified
+
     if (!user.isVerified) {
       return res
         .status(400)
@@ -283,6 +283,10 @@ const user_signin = async (req, res) => {
       user_id: userDataToGenerateToken?._id,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
+
+    await RefreshToken.deleteMany({ user_id: userDataToGenerateToken._id });
+
+
     const savedToken = await newRefreshToken.save();
 
     const { password: _, ...userDetails } = user.toObject();

@@ -310,7 +310,7 @@ const add_to_cart = async (req, res) => {
 };
 const cart_data = async (req, res) => {
   try {
-    console.log("cart_data endpoint called");
+    //console.log("cart_data endpoint called");
     const userId = req.body.userId;
     if (!userId) {
       return res
@@ -324,7 +324,7 @@ const cart_data = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Cart not found" });
     }
-    console.log("cart data:", cart);
+    //console.log("cart data:", cart);
     res.status(200).json({ success: true, cart });
   } catch (error) {
     console.error("Error in cart_data:", error);

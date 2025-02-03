@@ -27,10 +27,10 @@ const verifyToken = (role) => {
         return res.status(400).json({ message: "Invalid role specified.", role });
       }
 
-      console.log("__________from auth.js ********************************_______________token ********************************",token)
+      // console.log("__________from auth.js ********************************_______________token ********************************",token)
      
       const decoded = jwt.verify(token, secretKey);
-      console.log("decoded token from auth.js",decoded)
+      // console.log("decoded token from auth.js",decoded)
       if(!decoded) {
         res.status(401).json({message:"Token is invalid or expired.", role })
       }
@@ -44,6 +44,7 @@ const verifyToken = (role) => {
       if (refreshTokenFromDatabase.expires_at < Date.now()) {
         await RefreshToken.deleteOne({ userId: decoded._id });
         res.clearCookie(`RefreshToken`);
+        res.clearCookie(`access_token`)
         return res.status(401).json({ message: "Refresh token expired.", role });
       }
 
@@ -61,7 +62,7 @@ const verifyToken = (role) => {
         return res.status(403).json({ message: "User is blocked.", role });
       }
 
-      // Token and user are valid
+    
       req.user = decoded;
       next();
     } catch (err) {

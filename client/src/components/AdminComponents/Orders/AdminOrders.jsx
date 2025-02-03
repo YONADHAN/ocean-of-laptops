@@ -32,6 +32,8 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
           return "bg-green-100 text-green-700";
         case "Pending":
           return "bg-yellow-100 text-yellow-700";
+        case "Cancelled":
+          return "bg-red-100 text-red-700";    
         default:
           return "bg-gray-100 text-gray-700";
       }
@@ -66,6 +68,12 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
               >
                 View Details
               </button>
+            </div>
+          );
+        case "isReturnReq":
+          return(
+            <div className="flex justify-center ">              
+             {order.isReturnReq === true ?  <label className="ml-2 bg-red-400 px-3 rounded-lg py-2 text-white text-nowrap">Requested</label>: <label className="ml-2 text-gray-700">Not Requested</label>}
             </div>
           );
         default:
@@ -130,6 +138,7 @@ function OrderManagement() {
     { label: "Exp Delivery", key: "expDelivery" },
     { label: "Status", key: "status" },
     { label: "Total", key: "total" },
+    { label: "Return Request", key: 'isReturnReq'},
     { label: "Actions", key: "actions" },
   ];
 

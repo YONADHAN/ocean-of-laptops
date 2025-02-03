@@ -60,12 +60,14 @@ const admin_signin = async (req,res) => {
         }
 
         const accessToken = generateAccessToken("admin",adminDataToGenerateToken);
-        // console.log("Access Token:", accessToken);
+        console.log("Access Token (signin) : ", accessToken);
         const refreshToken = generateRefreshToken(
           "admin",
           adminDataToGenerateToken
         );
-        // console.log("Refresh Token:", refreshToken);
+        console.log("Refresh Token (signin) : ", refreshToken);
+
+        await RefreshToken.deleteMany({ user_id: adminDataToGenerateToken._id });
 
         const newRefreshToken = new RefreshToken({
           token: refreshToken,
@@ -74,11 +76,10 @@ const admin_signin = async (req,res) => {
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
         const savedToken = await newRefreshToken.save();
-        // console.log(savedToken)
+  
         const {password: _,...adminDetails} = user.toObject();
         if(savedToken) {
-          storeToken(
-            //"adminRefreshToken",
+          storeToken(            
             "RefreshToken",
             refreshToken,
             7 * 24 * 60 * 60 * 1000,
@@ -106,10 +107,9 @@ const admin_signin = async (req,res) => {
 const  requestPasswordResetFromSignin = async (req, res) => {
   try {
     console.log("Resetting password from signup...");
-    // Implement the logic for this function
+  
     const { email } = req.body;
 
-    // Find user by ID
     const user = await User.findOne({ email });
     if (!user) {
       return res

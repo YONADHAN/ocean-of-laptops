@@ -14,10 +14,7 @@ const refreshTokenSchema = mongoose.Schema({
       ref: 'User',
       required: true
     },
-   // user_id: {
-   //    type: String,
-   //    required:true
-   // },
+  
    expires_at: {
       type: Date,
       required:true
