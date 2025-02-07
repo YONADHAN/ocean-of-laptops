@@ -8,8 +8,8 @@ const {
 
 
 // Routes
-router.post("/refresh-token", refreshAccessToken); // Refresh token
-router.post("/google", googleAuth);               // Google authentication
+router.post("/refresh-token", refreshAccessToken); 
+router.post("/google", googleAuth);               
 router.delete("/refresh-token/:id", RemoveRefreshToken);
-console.log("ethiyitund")
+
 module.exports = router;

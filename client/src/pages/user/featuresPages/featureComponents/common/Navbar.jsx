@@ -10,6 +10,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  Laptop
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
@@ -23,8 +24,7 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try {
-      // const token = Cookies.get("user_access_token");
+    try {      
       const token = Cookies.get("access_token");
       if (!token) {
         toast.error("Token not found");
@@ -44,13 +44,11 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
         return;
       }
 
-      // Remove cookies
-      // Cookies.remove("userRefreshToken");
-      // Cookies.remove("user_access_token");
+     
       Cookies.remove("RefreshToken");
       Cookies.remove("access_token");
 
-      // Navigate to sign-in page
+  
       navigate("/user/signin");
     } catch (error) {
       console.error(error);
@@ -68,15 +66,14 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
 
   return (
     <nav
-      className={`fixed w-full z-50 transition-all duration-300 h-[70px] flex-col ${
-        scrolled
+      className={`fixed w-full z-50 transition-all duration-300 h-[70px] flex-col ${scrolled
           ? isDarkMode
             ? "bg-gray-900/95 backdrop-blur-md"
             : "bg-blue-600/95 backdrop-blur-md shadow-lg"
           : isDarkMode
-          ? "bg-gray-900"
-          : "bg-blue-700"
-      }`}
+            ? "bg-gray-900"
+            : "bg-blue-700"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 text-white">
@@ -84,36 +81,36 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
-              className={`p-2 rounded-lg ${
-                isDarkMode
+              className={`p-2 rounded-lg ${isDarkMode
                   ? "text-white hover:bg-gray-800"
                   : "text-gray-900 hover:bg-blue-100"
-              }`}
+                }`}
             >
               <Menu size={24} />
             </button>
 
             <a href="/user/home" className="ml-4 flex items-center space-x-2">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  isDarkMode ? "bg-white" : "bg-blue-100"
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? "bg-white" : "bg-blue-100"
+                  }`}
               >
                 <span
-                  className={`font-bold text-xl ${
-                    isDarkMode ? "text-white" : "text-blue-600"
-                  }`}
+                  className={`font-bold text-xl ${isDarkMode ? "text-white" : "text-blue-600"
+                    }`}
                 >
-                  OL
+                 <Laptop size={28}/>
                 </span>
               </div>
+
               <span
-                className={`text-xl font-bold ${
-                  isDarkMode ? "text-white" : "text-gray-900"
-                }`}
+                className={`hidden lg:block text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"
+                  }`}
               >
                 Oceon<span className="text-white">Of</span>Laptops
               </span>
+
+
+
             </a>
           </div>
 
@@ -122,12 +119,11 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
             {navLinks.map((link) => (
               <a
                 key={link}
-                href={`/user/${link.toLowerCase()}`}
-                className={`font-medium transition-colors ${
-                  isDarkMode
+                href={link!="Home"?`/${link.toLowerCase()}`:'/'}
+                className={`font-medium transition-colors ${isDarkMode
                     ? "text-gray-100 hover:text-white"
                     : "text-gray-100 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 {link}
               </a>
@@ -160,48 +156,65 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
 
             <a
               href="/user/features/account"
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkMode
+              className={`p-2 rounded-lg transition-colors ${isDarkMode
                   ? "text-gray-100 hover:bg-gray-800"
                   : "text-gray-100 hover:bg-gray-100  hover:text-gray-900"
-              }`}
+                }`}
             >
               <User size={20} />
             </a>
 
             <a
               href="/user/features/wishlist"
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkMode
+              className={`p-2 rounded-lg transition-colors ${isDarkMode
                   ? "text-gray-100 hover:bg-gray-800"
                   : "text-gray-100 hover:bg-gray-100  hover:text-gray-900"
-              }`}
+                }`}
             >
               <Heart size={24} />
             </a>
 
             <a
               href="/user/features/cart"
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkMode
+              className={`p-2 rounded-lg transition-colors ${isDarkMode
                   ? "text-gray-100 hover:bg-gray-800"
                   : "text-gray-100 hover:bg-gray-100 hover:text-gray-900"
-              }`}
+                }`}
             >
-              <ShoppingCart size={20} />        
-           
-            </a>
+              <ShoppingCart size={20} />
 
-            <button
+            </a>         
+
+
+
+
+          {
+            !Cookies.get('access_token') && (
+              <div onClick={()=> navigate('/user/signin')}>
+                <button className="px-3 py-1 rounded-full text-blue text-sm border-2 flex justify-center place-items-center">
+                  Signin
+                </button>
+              </div>
+            )
+          }
+          {
+            Cookies.get('access_token') && (
+              <button
               onClick={handleLogout}
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkMode
+              className={`p-2 rounded-lg transition-colors ${isDarkMode
                   ? "text-gray-100 hover:bg-gray-800"
                   : "text-gray-100 hover:bg-gray-100  hover:text-gray-900"
-              }`}
+                }`}
             >
               <LogOut size={20} />
             </button>
+            )
+          }
+          
+
+
+
+
           </div>
         </div>
       </div>
@@ -209,18 +222,16 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div
-          className={`md:hidden fixed inset-0 z-50 ${
-            isDarkMode ? "bg-gray-900" : "bg-white"
-          }`}
+          className={`md:hidden fixed inset-0 z-50 ${isDarkMode ? "bg-gray-900" : "bg-white"
+            }`}
         >
           <div className="p-4">
             <button
               onClick={() => setIsMenuOpen(false)}
-              className={`mb-4 p-2 rounded-lg ${
-                isDarkMode
+              className={`mb-4 p-2 rounded-lg ${isDarkMode
                   ? "text-gray-100 hover:bg-gray-800"
                   : "text-gray-100 hover:bg-gray-100"
-              }`}
+                }`}
             >
               <X size={24} />
             </button>
@@ -229,11 +240,10 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
                 <a
                   key={link}
                   href={`/user/${link.toLowerCase()}`}
-                  className={`text-lg font-medium ${
-                    isDarkMode
+                  className={`text-lg font-medium ${isDarkMode
                       ? "text-gray-300 hover:text-white"
                       : "text-gray-600 hover:text-gray-900"
-                  }`}
+                    }`}
                 >
                   {link}
                 </a>

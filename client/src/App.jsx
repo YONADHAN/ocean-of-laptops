@@ -23,8 +23,7 @@ const App = () => {
           
           <Route path="/*" element={<PublicRoutes />} />
           <Route path="/admin/*" element={<AdminRoutes />} />
-          <Route path="/user/*" element={<UserRoutes />} />
-          {/* <Route path='/' element={<PublicRoutes/>}/> */}
+          <Route path="/user/*" element={<UserRoutes />} />          
           <Route path="*" element={<Error404Page />} />     
 
         </Routes>

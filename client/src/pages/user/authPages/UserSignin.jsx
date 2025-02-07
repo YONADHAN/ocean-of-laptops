@@ -67,7 +67,7 @@ const Signin = () => {
           // path: ''
         });
 
-        navigate("/user/home");
+        navigate("/");
       }
     } catch (error) {
       if (error.response) {
@@ -93,7 +93,7 @@ const Signin = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg overflow-hidden flex flex-col lg:flex-row w-full max-w-4xl">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden flex flex-col lg:flex-row w-full md:w-2/3 max-w-4xl">
         <div className="w-full lg:w-1/2 p-8 ">
           <h2 className="text-2xl font-bold mb-2">Welcome back!</h2>
           <p className="mb-6">You’ve been missed! Let’s get you signed in.</p>

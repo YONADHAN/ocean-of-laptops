@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { axiosInstance } from "../../api/axiosConfig";
 import { authService} from '../../apiServices/adminApiServices';
 import Cookies from "js-cookie";
-import {jwtDecode} from "jwt-decode"; // Fix import
+import {jwtDecode} from "jwt-decode"; 
 import { useNavigate } from "react-router-dom";
 import {toast} from 'sonner'
 

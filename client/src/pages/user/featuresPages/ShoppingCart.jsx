@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "../../../api/axiosConfig";
+
 import {cartService} from "../../../apiServices/userApiServices"
 import Cookies from "js-cookie";
 import { toast } from "sonner";
@@ -141,13 +141,13 @@ export default function ShoppingCart() {
     } catch (error) {     
       if (error.response?.data?.message === "Product is blocked by the admin") {
         toast.error("This product is currently blocked by the admin");
-        navigate('/user/home')
+        navigate('/')
         //window.location.reload();
       } else if (
         error.response?.data?.message === "Category is blocked by the admin"
       ) {
         toast.error("This category is currently blocked by the admin");
-        navigate('/user/home')
+        navigate('/')
         //window.location.reload();
       } else {
         toast.error(error.response?.data?.message || "Error updating cart");
@@ -195,7 +195,7 @@ export default function ShoppingCart() {
 
   const handleModalClose = () => {
     setModalVisible(false);
-    navigate('/user/home');
+    navigate('/');
   };
 
   const indianCurrencyFormatter = new Intl.NumberFormat("en-IN", {
@@ -227,13 +227,13 @@ export default function ShoppingCart() {
         <div className="flex flex-col items-center pt-5 relative">
           <p className="text-xl text-gray-500">Oops! Your cart is empty.</p>
           <img
-          onClick={() => navigate("/user/shop")}
+          onClick={() => navigate("/shop")}
             src="/e.png"
             alt="Empty Cart"
             className="w-1/5 h-auto  opacity-90 hover:opacity-100 transition duration-300"
           />
           <button
-            onClick={() => navigate("/user/shop")}
+            onClick={() => navigate("/shop")}
             className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-md hover:shadow-lg hover:bg-blue-600 focus:ring focus:ring-blue-300 transition duration-300 transform hover:scale-105  "
           >
             Continue Shopping

@@ -29,18 +29,18 @@ router.post('/reset-password-from-signin',PasswordController.resetPasswordFromSi
 
 
 //ProductController
-router.get('/get_product_details/:id',verifyUser, ProductController.get_product_details);
+router.get('/get_product_details/:id', ProductController.get_product_details);//public api from productDetailsPage
 router.get('/get_products', verifyUser,ProductController.get_products)
 router.get("/get_all_products_paginated",verifyUser, ProductController.get_all_products_paginated);
-router.get("/get_filter_options",verifyUser,ProductController.get_filter_options);
-router.get('/filter_products',verifyUser, ProductController.filter_products);
+router.get("/get_filter_options", ProductController.get_filter_options);//public api from shop (FilterPage.jsx)
+router.get('/filter_products', ProductController.filter_products);//public api from shop (ProductList.jsx)
 router.post('/get_quantity' ,verifyUser, ProductController.get_quantity)
-
+router.get('/search', ProductController.searchProducts)
 
 //CategoryController
 router.get('/get_category_id_from_name',verifyUser, categoryController.get_category_id_from_name)
-router.get('/get_products_by_category', verifyUser, ProductController.get_products_by_category)
-router.get('/get_category_list',verifyUser, categoryController.get_category_list)
+router.get('/get_products_by_category',  ProductController.get_products_by_category)//public api from product collection
+router.get('/get_category_list', categoryController.get_category_list)//public api from product collection
 
 
 //address

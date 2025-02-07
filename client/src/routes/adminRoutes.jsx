@@ -64,9 +64,9 @@ const AdminRoutes = () => {
                     <Route path='customers' element={<AdminCustomers/>} />
                     <Route path='orders' element={<AdminOrders/>}/>
                     <Route path='orders/order_details/:orderId' element={<AdminOrderDetails/>}/>
-                    <Route path='banner' element={<AdminBanner/>}/>
+                    {/* <Route path='banner' element={<AdminBanner/>}/> */}
                     <Route path='coupon' element={<AdminCoupon/>}/>
-                    <Route path='settings' element={<AdminSettings/>}/>  
+                    {/* <Route path='settings' element={<AdminSettings/>}/>   */}
                                   
                 </Route>
                 <Route path="*" element={<Error404Page />} />

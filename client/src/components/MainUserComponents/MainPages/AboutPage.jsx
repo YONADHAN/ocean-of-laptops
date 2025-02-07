@@ -17,8 +17,8 @@ const AboutUs = () => {
                 With years of experience in the industry, we've built a reputation for excellence, reliability, and customer satisfaction that sets us apart in the vast sea of tech retailers.
               </p>
             </div>
-            <div className="bg-blue-200 h-64 rounded-lg flex items-center justify-center">
-              <span className="text-blue-500 text-lg overflow-hidden h-[260px] "><img src="https://dm0qx8t0i9gc9.cloudfront.net/thumbnails/video/Vd3bj2jPe/videoblocks-focused-businessman-working-on-laptop-computer-in-office-with-large-windows-male-worker-using-laptop-computer-at-remote-workplace-serious-business-man-looking-at-laptop-screen-in-home-office_ryl5b7gzfw_thumbnail-1080_01.png" alt="" /></span>
+            <div className="bg-blue-200  rounded-lg flex items-center justify-center overflow-hidden ">
+              <span className="text-blue-500 text-lg overflow-hidden  "><img src="https://dm0qx8t0i9gc9.cloudfront.net/thumbnails/video/Vd3bj2jPe/videoblocks-focused-businessman-working-on-laptop-computer-in-office-with-large-windows-male-worker-using-laptop-computer-at-remote-workplace-serious-business-man-looking-at-laptop-screen-in-home-office_ryl5b7gzfw_thumbnail-1080_01.png" alt="" /></span>
             </div>
           </div>
         </section>
@@ -44,8 +44,8 @@ const AboutUs = () => {
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-blue-800 mb-6">Our Supply Chain</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="bg-blue-200 h-64 rounded-lg flex items-center justify-center">
-              <span className="text-blue-500 text-lg overflow-hidden h-[260px]"><img src="https://convergeconsulting.com/wp-content/uploads/2021/06/Supply-Chain-Visual.jpg" alt="" /></span>
+            <div className="bg-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
+              <span className="text-blue-500 text-lg overflow-hidden "><img src="https://convergeconsulting.com/wp-content/uploads/2021/06/Supply-Chain-Visual.jpg" alt="" /></span>
             </div>
             <div>
               <p className="text-lg text-gray-700 mb-4">

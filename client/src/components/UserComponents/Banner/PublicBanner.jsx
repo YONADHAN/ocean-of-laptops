@@ -18,7 +18,7 @@ export default function Banner() {
       
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
         <h1 className="text-2xl md:text-4xl font-light tracking-widest text-center mb-8">
-          WELCOME TO THE KEPALAS LARGEST LAPTOP ONLINE SHOP
+          WELCOME TO THE KERALAS LARGEST LAPTOP ONLINE SHOP
         </h1>
         
         <button 

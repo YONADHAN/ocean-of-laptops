@@ -47,7 +47,7 @@ const ResetPasswordPage = () => {
       if (response.status === 200) {
        toast.success("Password changed successfully!");
       }
-      navigate('/user/shop')
+      navigate('/')
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to reset password."

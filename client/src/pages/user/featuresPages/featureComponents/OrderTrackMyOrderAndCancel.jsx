@@ -10,10 +10,6 @@ import ReasonMessageBox from "../../../../components/MainComponents/reasonMessag
 
 
 
-
-
-
-
 // Separate Modal component with Tailwind styling
 const PaymentModal = ({ isOpen, onClose, message, success }) => {
   if (!isOpen) return null;
@@ -53,7 +49,7 @@ const usePaymentHandler = (orderId) => {
     }
   };
 
-  const getTaxInvoice = async()=> {
+  const getTaxInvoice = async () => {
     const response = await axiosInstance.get(`/get_tax_invoice/${orderId}`);
     if (!response) {
       toast.error("Tax invoice not found. Please try again.");
@@ -172,25 +168,25 @@ const handleDownloadInvoice = async (orderId) => {
 
     // Create blob from array buffer
     const blob = new Blob([response.data], { type: 'application/pdf' });
-    
+
     // Create download link
     const fileURL = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = fileURL;
     link.download = `invoice_${orderId}.pdf`;
-    
+
     // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Clean up
     URL.revokeObjectURL(fileURL);
-    
+
     toast.success("Tax invoice downloaded successfully.");
   } catch (error) {
     console.error("Error downloading invoice:", error);
-    
+
     // Better error handling
     if (error.response) {
       if (error.response.status === 403) {
@@ -221,7 +217,7 @@ const OrderTrackingPage = () => {
   const [showRazorPayModal, setShowRazorPayModal] = useState(false);
   const [modalData, setModalData] = useState({ success: false, message: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const navigate = useNavigate();
   const { orderId } = useParams();
   const { handlePayment, modalState, closeModal } = usePaymentHandler(orderId);
@@ -416,6 +412,123 @@ const OrderTrackingPage = () => {
 
   const currentStatus = getTimelineStatus(order.orderStatus);
 
+
+
+  {/* Helper function to render activity buttons */ }
+  const renderActivityButtons = (item) => (
+    <>
+      {/* Cancel button logic */}
+      {item.orderStatus !== "Cancelled" && item.orderStatus !== "Delivered" && (
+        <button
+          className="bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium"
+          onClick={() => handleCancelProduct(item)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+          <span>Cancel</span>
+        </button>
+      )}
+
+      {/* Return button logic */}
+      {item.orderStatus === "Delivered" &&
+        (!item.returnRequest?.requestStatus ||
+          (item.returnRequest.requestStatus !== "Approved" &&
+            item.returnRequest.requestStatus !== "Rejected")) && (
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium"
+            onClick={() => {
+              setSelectedProduct(item);
+              setShowReturnModal(true);
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+              />
+            </svg>
+            <span>
+              Return{" "}
+              {item.returnRequest?.requestStatus === "Pending" ? "Request Applied" : ""}
+            </span>
+          </button>
+        )}
+
+      {/* Return approved badge */}
+      {item.returnRequest?.requestStatus === "Approved" && (
+        <div className="inline-flex items-center px-3 py-1 rounded-md bg-green-500 text-white text-sm font-medium">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span>Return Approved</span>
+        </div>
+      )}
+
+      {/* Return rejected badge */}
+      {item.returnRequest?.requestStatus === "Rejected" && (
+        <div className="inline-flex items-center px-3 py-1 rounded-md bg-red-500 text-white text-sm font-medium">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+          <span>Return Rejected</span>
+        </div>
+      )}
+    </>
+  );
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto p-4 md:p-6">
@@ -436,24 +549,24 @@ const OrderTrackingPage = () => {
             order.orderStatus !== "Cancelled" && (
               <button
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md flex items-center"
-               
+
                 onClick={handleCancelOrder}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel Order
               </button>
             )}
-            {
-              order.orderStatus === 'Delivered'  && (
-                <button className="px-4 py-1 bg-black text-white" onClick={()=>handleDownloadInvoice(orderId)}>
-                  Download Invoice
-                </button>
-              )
-            }
+          {
+            order.orderStatus === 'Delivered' && (
+              <button className="px-4 py-1 bg-black text-white" onClick={() => handleDownloadInvoice(orderId)}>
+                Download Invoice
+              </button>
+            )
+          }
         </div>
 
         {/* Main content */}
-        <div className="mb-8 rounded-lg bg-white p-6 shadow-lg">
+        <div className="mb-8 rounded-lg bg-white p-6 shadow-lg ">
           {/* Order header */}
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -467,7 +580,7 @@ const OrderTrackingPage = () => {
             </div>
             <div className="text-xl font-bold text-blue-600">
               {order.totalAmount.toLocaleString() ===
-              calculateTotal(order.orderItems).toLocaleString() ? (
+                calculateTotal(order.orderItems).toLocaleString() ? (
                 <p>₹{order.totalAmount.toLocaleString()}</p>
               ) : (
                 <>
@@ -508,23 +621,20 @@ const OrderTrackingPage = () => {
                   return (
                     <div key={step.name} className="flex flex-col items-center">
                       <div
-                        className={`z-10 flex items-center justify-center w-12 h-12 rounded-full border-4 ${
-                          isActive
+                        className={`z-10 flex items-center justify-center w-12 h-12 rounded-full border-4 ${isActive
                             ? "bg-blue-500 border-blue-500"
                             : "bg-white border-gray-200"
-                        } transition-all duration-500 ease-in-out`}
+                          } transition-all duration-500 ease-in-out`}
                       >
                         <Icon
-                          className={`w-6 h-6 ${
-                            isActive ? "text-white" : "text-gray-400"
-                          }`}
+                          className={`w-6 h-6 ${isActive ? "text-white" : "text-gray-400"
+                            }`}
                         />
                       </div>
                       <div className="mt-2 text-center">
                         <p
-                          className={`text-sm font-medium ${
-                            isActive ? "text-blue-600" : "text-gray-500"
-                          }`}
+                          className={`text-sm font-medium ${isActive ? "text-blue-600" : "text-gray-500"
+                            }`}
                         >
                           {step.name}
                         </p>
@@ -541,10 +651,17 @@ const OrderTrackingPage = () => {
             </div>
           </div>
 
+
+
+
+
+          {/* Products table */}
           {/* Products table */}
           <div className="mb-8">
-            <h3 className="mb-4 font-semibold text-blue-800">Products</h3>
-            <div className="overflow-x-auto">
+            <h3 className="mb-4 font-semibold text-blue-800 px-4 md:px-0">Products</h3>
+
+            {/* Desktop/Tablet view (hidden on mobile) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-blue-50 text-sm">
                   <tr>
@@ -558,162 +675,181 @@ const OrderTrackingPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {order.orderItems &&
-                    order.orderItems.map((item, index) => (
-                      <tr key={index} className="hover:bg-blue-50">
-                        <td
-                          className="py-4 px-4"
-                          onClick={() => goToProductDetailPage(item.product)}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="h-16 w-16 flex-shrink-0 rounded-lg">
-                              <img
-                                src={item.productImage}
-                                alt=""
-                                className="object-contain w-full h-full"
-                              />
-                            </div>
-                            <span className="font-medium">
-                              {item.productName}
-                            </span>
+                  {order.orderItems?.map((item, index) => (
+                    <tr key={index} className="hover:bg-blue-50">
+                      <td className="py-4 px-4 cursor-pointer" onClick={() => goToProductDetailPage(item.product)}>
+                        <div className="flex items-center gap-4">
+                          <div className="h-16 w-16 flex-shrink-0 rounded-lg">
+                            <img src={item.productImage} alt="" className="object-contain w-full h-full" />
                           </div>
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          ₹{item.price.toLocaleString()}
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          {item.quantity}
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          {item.discount}%
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          ₹{item.totalPrice.toLocaleString()}
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 font-medium">
-                            {item.orderStatus}
-                          </span>
-                        </td>
+                          <span className="font-medium">{item.productName}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-right">₹{item.price.toLocaleString()}</td>
+                      <td className="py-4 px-4 text-right">{item.quantity}</td>
+                      <td className="py-4 px-4 text-right">{item.discount}%</td>
+                      <td className="py-4 px-4 text-right">₹{item.totalPrice.toLocaleString()}</td>
+                      <td className="py-4 px-4 text-right">
+                        <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 font-medium">
+                          {item.orderStatus}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-right space-y-2">
+                        {/* Activity Buttons */}
+                        {item.orderStatus !== "Cancelled" && item.orderStatus !== "Delivered" && (
+                          <button
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium w-full"
+                            onClick={() => handleCancelProduct(item)}
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Cancel</span>
+                          </button>
+                        )}
 
-                        <td className="py-4 px-4 text-right">
-                          {/* Cancel button logic */}
-                          {item.orderStatus !== "Cancelled" &&
-                            item.orderStatus !== "Delivered" && (
-                              <button
-                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium"
-                                // onClick={() => {
-                                //   setSelectedProduct(item);
-                                //   setShowProductAlert(true);
-                                // }}
-                                onClick={() => {
-                                  handleCancelProduct(item);
-                                }}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                                <span>Cancel</span>
-                              </button>
-                            )}
-
-                          {/* Return button logic */}
-                          {item.orderStatus === "Delivered" &&
-                            (!item.returnRequest?.requestStatus ||
-                              (item.returnRequest.requestStatus !==
-                                "Approved" &&
-                                item.returnRequest.requestStatus !==
-                                  "Rejected")) && (
-                              <button
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium"
-                                onClick={() => {
-                                  setSelectedProduct(item);
-                                  setShowReturnModal(true);
-                                }}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                                  />
-                                </svg>
-                                <span>
-                                  Return{" "}
-                                  {item.returnRequest?.requestStatus ===
-                                  "Pending"
-                                    ? "Request Applied"
-                                    : ""}
-                                </span>
-                              </button>
-                            )}
-
-                          {/* Return approved badge */}
-                          {item.returnRequest?.requestStatus === "Approved" && (
-                            <div className="inline-flex items-center px-3 py-1 rounded-md bg-green-500 text-white text-sm font-medium">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-1"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
+                        {item.orderStatus === "Delivered" && (!item.returnRequest?.requestStatus ||
+                          (item.returnRequest.requestStatus !== "Approved" && item.returnRequest.requestStatus !== "Rejected")) && (
+                            <button
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-1 text-sm font-medium w-full"
+                              onClick={() => {
+                                setSelectedProduct(item);
+                                setShowReturnModal(true);
+                              }}
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                               </svg>
-                              <span>Return Approved</span>
-                            </div>
+                              <span>Return {item.returnRequest?.requestStatus === "Pending" ? "Request Applied" : ""}</span>
+                            </button>
                           )}
 
-                          {/* Return rejected badge */}
-                          {item.returnRequest?.requestStatus === "Rejected" && (
-                            <div className="inline-flex items-center px-3 py-1 rounded-md bg-red-500 text-white text-sm font-medium">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-1"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                              <span>Return Rejected</span>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                        {item.returnRequest?.requestStatus === "Approved" && (
+                          <div className="inline-flex items-center px-3 py-1 rounded-md bg-green-500 text-white text-sm font-medium">
+                            <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Return Approved</span>
+                          </div>
+                        )}
+
+                        {item.returnRequest?.requestStatus === "Rejected" && (
+                          <div className="inline-flex items-center px-3 py-1 rounded-md bg-red-500 text-white text-sm font-medium">
+                            <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Return Rejected</span>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile view (hidden on tablet/desktop) */}
+            <div className="md:hidden space-y-4 px-4">
+              {order.orderItems?.map((item, index) => (
+                <div key={index} className="bg-white rounded-lg shadow-sm p-4">
+                  <div className="flex gap-4 mb-4 cursor-pointer" onClick={() => goToProductDetailPage(item.product)}>
+                    <div className="h-20 w-20 flex-shrink-0 rounded-lg">
+                      <img src={item.productImage} alt="" className="object-contain w-full h-full" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium mb-2">{item.productName}</h4>
+                      <div className="grid grid-cols-1 gap-2 text-sm">
+                        <div>
+                          <span className="text-gray-500">Price:</span>
+                          <span className="ml-2">₹{item.price.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Qty:</span>
+                          <span className="ml-2">{item.quantity}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Discount:</span>
+                          <span className="ml-2">{item.discount}%</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Total:</span>
+                          <span className="ml-2">₹{item.totalPrice.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm text-gray-500">Status:</span>
+                    <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 font-medium">
+                      {item.orderStatus}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {/* Mobile Activity Buttons */}
+                    {item.orderStatus !== "Cancelled" && item.orderStatus !== "Delivered" && (
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out flex items-center justify-center space-x-1 text-sm font-medium w-full"
+                        onClick={() => handleCancelProduct(item)}
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Cancel</span>
+                      </button>
+                    )}
+
+                    {item.orderStatus === "Delivered" && (!item.returnRequest?.requestStatus ||
+                      (item.returnRequest.requestStatus !== "Approved" && item.returnRequest.requestStatus !== "Rejected")) && (
+                        <button
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition duration-300 ease-in-out flex items-center justify-center space-x-1 text-sm font-medium w-full"
+                          onClick={() => {
+                            setSelectedProduct(item);
+                            setShowReturnModal(true);
+                          }}
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                          </svg>
+                          <span>Return {item.returnRequest?.requestStatus === "Pending" ? "Request Applied" : ""}</span>
+                        </button>
+                      )}
+
+                    {item.returnRequest?.requestStatus === "Approved" && (
+                      <div className="flex items-center justify-center px-3 py-1 rounded-md bg-green-500 text-white text-sm font-medium">
+                        <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Return Approved</span>
+                      </div>
+                    )}
+
+                    {item.returnRequest?.requestStatus === "Rejected" && (
+                      <div className="flex items-center justify-center px-3 py-1 rounded-md bg-red-500 text-white text-sm font-medium">
+                        <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Return Rejected</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
           <div className="bg-gray-50">
             <div className="container mx-auto p-4 md:p-6">

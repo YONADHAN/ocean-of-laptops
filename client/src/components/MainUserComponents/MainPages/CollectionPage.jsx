@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import {axiosInstance} from '../../../api/axiosConfig.js'
 import {productService} from '../../../apiServices/userApiServices.jsx'
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -18,10 +16,10 @@ const CategoryProducts = () => {
 
   const fetchCategories = async () => {
     try {
-      console.log("CollectionPage.jsx -----------response-------,")
-      // const response = await axiosInstance.get('/get_category_list');
+      
+      
       const response = await productService.getCategoryList();
-      console.log("CollectionPage.jsx -----------response-------,",response)
+     
       if (response.data.success) {
         setCategories(response.data.categories);
       } else {
@@ -33,7 +31,7 @@ const CategoryProducts = () => {
       toast.error("Error fetching categories");
       setError('Error fetching categories');
     } finally {
-      setLoading(false); // Update loading state
+      setLoading(false); 
     }
   };
 

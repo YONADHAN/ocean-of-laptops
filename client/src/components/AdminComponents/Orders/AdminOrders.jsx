@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,14 +5,14 @@ import { Search } from 'lucide-react';
 import Table from "../../MainComponents/Table";
 import Pagination from "../../MainComponents/Pagination";
 import { axiosInstance } from "../../../api/axiosConfig";
-import {orderService} from '../../../apiServices/adminApiServices'
+import { orderService } from '../../../apiServices/adminApiServices';
 import debounce from "lodash/debounce";
 
 function OrderTable({ orders, columns, onViewDetails, loading }) {
   const renderHeader = (columns) => (
     <>
       {columns.map((column, index) => (
-        <div key={index} className="hidden md:block p-2 text-left font-medium">
+        <div key={index} className="hidden lg:block p-2 text-left font-medium">
           {column.label}
         </div>
       ))}
@@ -72,8 +66,14 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
           );
         case "isReturnReq":
           return(
-            <div className="flex justify-center ">              
-             {order.isReturnReq === true ?  <label className="ml-2 bg-red-400 px-3 rounded-lg py-2 text-white text-nowrap">Requested</label>: <label className="ml-2 text-gray-700">Not Requested</label>}
+            <div className="flex justify-center">              
+              {order.isReturnReq ? (
+                <label className="ml-2 bg-red-400 px-3 rounded-lg py-2 text-white text-nowrap">
+                  Requested
+                </label>
+              ) : (
+                <label className="ml-2 text-gray-700">Not Requested</label>
+              )}
             </div>
           );
         default:
@@ -83,7 +83,7 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
 
     return (
       <>
-        <div className="md:hidden col-span-7 space-y-4 p-4 border-b">
+        <div className="lg:hidden col-span-7 space-y-4 p-4 border-b">
           {columns.map((column) => (
             <div key={column.key} className="flex justify-between items-start">
               <span className="font-medium text-gray-700">{column.label}:</span>
@@ -92,7 +92,7 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
           ))}
         </div>
         {columns.map((column) => (
-          <div key={column.key} className="hidden md:block p-4">
+          <div key={column.key} className="hidden lg:block p-4">
             {renderContent(column.key)}
           </div>
         ))}
@@ -142,15 +142,14 @@ function OrderManagement() {
     { label: "Actions", key: "actions" },
   ];
 
-  const calculateTotal = (items) => {
-    return items.reduce((sum, item) => sum + item.totalPrice, 0);
-  };
-
   const fetchOrders = async ({ page = 1, query = "" }) => {
     try {
       setLoading(true);
-    
-      const {data} =  await orderService.getOrders({page, limit: pagination.limit, searchQuery: query})
+      const { data } = await orderService.getOrders({ 
+        page, 
+        limit: pagination.limit, 
+        searchQuery: query 
+      });
 
       if (data.success) {
         setOrders(data.orders);
@@ -202,17 +201,17 @@ function OrderManagement() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-semibold text-blue-800">Order Management</h2>
+        <h2 className="text-2xl lg:text-3xl font-semibold text-blue-800">Order Management</h2>
       </div>
 
       <div className="mb-4">
-        <div className="relative">
+        <div className="relative w-full">
           <input
             type="text"
             placeholder="Search orders..."
             value={searchQuery}
             onChange={handleSearch}
-            className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full  p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
         </div>
@@ -220,7 +219,7 @@ function OrderManagement() {
 
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="overflow-hidden">
+          <div className="overflow-hidden border rounded-lg">
             <OrderTable 
               orders={orders}
               columns={columns}

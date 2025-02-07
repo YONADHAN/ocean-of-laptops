@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom"; 
-import axios from "axios";
-import {axiosInstance} from '../../../api/axiosConfig'
 import {productService} from '../../../apiServices/userApiServices'
 import ProductDetail from "../../UserComponents/products/ProductDetail";
 import ProductCollection from "../../UserComponents/products/ProductCollection";
@@ -25,15 +23,15 @@ const ProductDetailedViewPage = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error fetching product details';
       
-      // Handle specific status codes
+     
       switch (error.response?.status) {
         case 404:
           toast.error('Product not found');
-          navigate('/user/home')
+          navigate('/')
           break;
         case 403:
           toast.error(error.response.message||'Your Product has been blocked by administrator');
-          navigate('/user/home')
+          navigate('/')
           break;
         case 400:
           toast.error(errorMessage);

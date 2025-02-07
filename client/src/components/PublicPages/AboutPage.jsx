@@ -4,7 +4,7 @@ import Footer from "./Footer";
 const AboutUs = () => {
   return (
     <>
-        <Navbar/>
+       
       <div className="bg-blue-50 min-h-screen">
         <main className="container mx-auto px-4 py-12">
           <section className="mb-12">
@@ -26,8 +26,8 @@ const AboutUs = () => {
                   retailers.
                 </p>
               </div>
-              <div className="bg-blue-200 h-64 rounded-lg flex items-center justify-center">
-                <span className="text-blue-500 text-lg overflow-hidden h-[260px] ">
+              <div className="bg-blue-200 rounded-lg  flex items-center justify-center">
+                <span className="text-blue-500 text-lg overflow-hidden rounded-lg ">
                   <img
                     src="https://dm0qx8t0i9gc9.cloudfront.net/thumbnails/video/Vd3bj2jPe/videoblocks-focused-businessman-working-on-laptop-computer-in-office-with-large-windows-male-worker-using-laptop-computer-at-remote-workplace-serious-business-man-looking-at-laptop-screen-in-home-office_ryl5b7gzfw_thumbnail-1080_01.png"
                     alt=""
@@ -77,8 +77,8 @@ const AboutUs = () => {
               Our Supply Chain
             </h2>
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="bg-blue-200 h-64 rounded-lg flex items-center justify-center">
-                <span className="text-blue-500 text-lg overflow-hidden h-[260px]">
+              <div className="bg-blue-200 rounded-lg flex items-center justify-center">
+                <span className="text-blue-500 text-lg overflow-hidden h-full  rounded-lg">
                   <img
                     src="https://convergeconsulting.com/wp-content/uploads/2021/06/Supply-Chain-Visual.jpg"
                     alt=""

@@ -6,7 +6,6 @@ import UserSignin from '../pages/user/authPages/UserSignin';
 import UserSignup from '../pages/user/authPages/UserSignup';
 import Home from '../components/MainUserComponents/MainPages/HomePage';
 import ProductDetailPage from '../components/MainUserComponents/MainPages/ProductDetailsPage';
-// import ShopPage from '../components/MainUserComponents/MainPages/ShopPage';
 import CollectionPage from "../components/MainUserComponents/MainPages/CollectionPage";
 import AboutUs from '../components/MainUserComponents/MainPages/AboutPage';
 import Error404Page from '../pages/others/Error404'
@@ -105,14 +104,7 @@ const UserRoutes = () => {
                         </PublicRoute>
                     }                
                 />
-                <Route path='/' element={<PrivateRoute allowedRole="user" redirectTo="/user/signin"><UserFeatureLayout/></PrivateRoute>}>                
-                    <Route path='product_detail/:id' element={<ProductDetailPage/>}/>                   
-                    <Route path='shop' element={<Filter/>}/>              
-                    <Route path='collections' element={<CollectionPage/>}/>
-                    <Route path='about' element={<AboutUs/>}/>   
-                    <Route path='home' element={<Home/>}/>  
-                    <Route path='filter' element={<Filter/>}/>                          
-                </Route>
+              
                 <Route path='/features' element={<PrivateRoute allowedRole="user" redirectTo="/user/signin"><UserFeatureLayout/></PrivateRoute>}>
                     <Route path='dashboard' element={<Dashboard/>}/>
                     <Route path="account" element={<AccountLayout/>}>

@@ -68,9 +68,9 @@ const AdminLayout = () => {
     { title: 'Products', url: '/admin/products', icon: PackageSearch },  
     { title: 'Customers', url: '/admin/customers', icon: Users },
     { title: 'Orders', url: '/admin/orders', icon: ListOrdered },
-    { title: 'Banner', url: '/admin/banner', icon: Image },
+    // { title: 'Banner', url: '/admin/banner', icon: Image },
     { title: 'Coupon', url: '/admin/coupon', icon: Gift },
-    { title: 'Settings', url: '/admin/settings', icon: Sliders },
+    // { title: 'Settings', url: '/admin/settings', icon: Sliders },
   ];
 
   return (

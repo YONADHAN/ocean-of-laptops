@@ -17,9 +17,7 @@ const OrderHistory = () => {
 
   const fetchOrders = async (page) => {
     try {
-      // const response = await axiosInstance.get(
-      //   `/order_history?page=${page}&limit=${itemsPerPage}`
-      // );
+    
       const response = await orderService.getOrderHistory(page, itemsPerPage)
       setOrders(response.data.orders);
       setTotalPages(Math.ceil(response.data.total / itemsPerPage));

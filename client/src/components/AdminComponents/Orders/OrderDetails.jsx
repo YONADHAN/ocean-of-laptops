@@ -61,10 +61,10 @@ const AdminOrderDetails = () => {
       ...returnRequest,
       itemId,
     });
-    
+
     setReturnRequestConfirmationModal(true);
   };
-  
+
   const handleReturnRequestAction = async (decision) => {
     if (!selectedReturnRequest) return;
 
@@ -102,8 +102,7 @@ const AdminOrderDetails = () => {
         }));
 
         toast.success(
-          `Return request ${
-            decision === "accepted" ? "approved" : "rejected"
+          `Return request ${decision === "accepted" ? "approved" : "rejected"
           } successfully`
         );
         window.location.reload();
@@ -120,7 +119,7 @@ const AdminOrderDetails = () => {
       setSelectedReturnRequest(null);
     }
   };
-  const getReturnRequestStatusBadge = ( itemId, returnRequest) => {
+  const getReturnRequestStatusBadge = (itemId, returnRequest) => {
     if (!returnRequest) return null;
 
     const statusColors = {
@@ -131,21 +130,19 @@ const AdminOrderDetails = () => {
 
     return (
       <div
-        className={`py-1 rounded-full ${
-          statusColors[returnRequest.requestStatus]
-        } ${
-          returnRequest.requestStatus === "Pending"
+        className={`py-1 rounded-full ${statusColors[returnRequest.requestStatus]
+          } ${returnRequest.requestStatus === "Pending"
             ? "hover:cursor-pointer"
             : ""
-        }`}
+          }`}
         onClick={() =>
           returnRequest.requestStatus === "Pending" &&
           handleReturnRequestView(returnRequest, itemId)
-          
+
         }
       >
         <p className="text-white text-center px-2">
-          Return {returnRequest.requestStatus}
+          {returnRequest.requestStatus}
         </p>
       </div>
     );
@@ -228,6 +225,146 @@ const AdminOrderDetails = () => {
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
+
+
+
+
+  const ResponsiveOrderTable = ({ orderData }) => {
+    const getStatusColor = (status) => {
+      // Add your status color logic here
+      switch (status) {
+        case "Delivered":
+          return "bg-green-100 text-green-700";
+        case "Pending":
+          return "bg-yellow-100 text-yellow-700";
+        case "Cancelled":
+          return "bg-red-100 text-red-700";
+        default:
+          return "bg-gray-100 text-gray-700";
+      }
+    };
+
+    return (
+      <div className="w-full overflow-hidden shadow-sm rounded-lg">
+        {/* Mobile view (iPhone 12) */}
+        <div className="md:hidden">
+          {orderData.orderItems?.map((item) => (
+            <div key={item._id} className="bg-white p-4 border-b">
+              <div className="flex items-center mb-3">
+                <img
+                  src={item.productImage}
+                  alt={item.productName}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div className="ml-3">
+                  <h3 className="font-medium">{item.productName}</h3>
+                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Price:</span>
+                  <span>₹{item.price?.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total:</span>
+                  <span>₹{item.totalPrice?.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Status:</span>
+                  <span className={`px-3 py-1 rounded-full text-xs ${getStatusColor(item.orderStatus)}`}>
+                    {item.orderStatus}
+                  </span>
+                </div>
+                {item.returnRequest && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Return:</span>
+                    <div>{getReturnRequestStatusBadge(item._id, item.returnRequest)}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          <div className="bg-gray-50 p-4 space-y-2">
+            <div className="flex justify-between">
+              <span className="font-semibold">Total Amount:</span>
+              <span className="font-semibold">₹{orderData.orderedAmount?.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold">Payable Amount:</span>
+              <span className="font-semibold">₹{orderData.payableAmount?.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tablet and Desktop view */}
+        <div className="hidden md:block">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left">Product</th>
+                <th className="px-4 py-3 text-center">Quantity</th>
+                <th className="px-4 py-3 text-right">Price</th>
+                <th className="px-4 py-3 text-right">Total</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Return Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {orderData.orderItems?.map((item) => (
+                <tr key={item._id}>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center">
+                      <img
+                        src={item.productImage}
+                        alt={item.productName}
+                        className="w-12 h-12 object-cover rounded mr-3"
+                      />
+                      <span className="font-medium">{item.productName}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-center">{item.quantity}</td>
+                  <td className="px-4 py-3 text-right">₹{item.price?.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right">₹{item.totalPrice?.toLocaleString()}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm text-center w-full ${getStatusColor(item.orderStatus)}`}>
+                      {item.orderStatus}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {item.returnRequest && getReturnRequestStatusBadge(item._id, item.returnRequest)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-gray-50">
+              <tr>
+                <td colSpan="3" className="px-4 py-3 text-right font-semibold">Total Amount:</td>
+                <td className="px-4 py-3 text-right font-semibold">₹{orderData.orderedAmount?.toLocaleString()}</td>
+                <td colSpan="2"></td>
+              </tr>
+              <tr>
+                <td colSpan="3" className="px-4 py-3 text-right font-semibold">Payable Amount:</td>
+                <td className="px-4 py-3 text-right font-semibold">₹{orderData.payableAmount?.toLocaleString()}</td>
+                <td colSpan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+
+
+
+
+
+
+
+
+
+
 
   if (loading) {
     return (
@@ -316,42 +453,52 @@ const AdminOrderDetails = () => {
         <div className="mt-6 border-t pt-4">
           <h3 className="text-lg font-semibold mb-2">Update Order Status</h3>
           <div className="max-w-xs">
-            <select
-              value={orderData.orderStatus}
-              onChange={handleStatusChange}
-              disabled={updating || orderData.orderStatus === "Cancelled"}
-              className={`w-full p-2 border rounded ${
-                updating ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-              } ${orderData.orderStatus === "Cancelled" ? "bg-gray-100" : ""}`}
-            >
-              {["Pending", "Placed", "Shipped", "Delivered", "Cancelled"].map(
-                (status) => (
-                  <option
-                    key={status}
-                    value={status}
-                    disabled={
-                      orderData.orderStatus === "Cancelled" ||
-                      (orderData.orderStatus === "Delivered" &&
-                        status !== "Delivered")
-                    }
-                  >
-                    {status}
-                  </option>
-                )
+            <div>
+              <select
+                value={orderData.orderStatus}
+                onChange={handleStatusChange}
+                disabled={updating || orderData.orderStatus === "Cancelled"}
+                className={`w-full p-2 border rounded ${updating ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  } ${orderData.orderStatus === "Cancelled" ? "bg-gray-100" : ""}`}
+              >
+                {["Pending", "Placed", "Shipped", "Delivered", "Cancelled"].map(
+                  (status) => (
+                    <option
+                      key={status}
+                      value={status}
+                      disabled={
+                        orderData.orderStatus === "Cancelled" ||
+                        (orderData.orderStatus === "Delivered" &&
+                          status !== "Delivered")
+                      }
+                    >
+                      {status}
+                    </option>
+                  )
+                )}
+              </select>
+              {orderData.orderStatus === "Cancelled" && (
+                <p className="text-sm text-red-600 mt-1">
+                  Cancelled orders cannot be updated
+                </p>
               )}
-            </select>
-            {orderData.orderStatus === "Cancelled" && (
-              <p className="text-sm text-red-600 mt-1">
-                Cancelled orders cannot be updated
-              </p>
-            )}
-            {orderData.orderStatus === "Delivered" && (
-              <p className="text-sm text-green-600 mt-1">
-                Delivered orders cannot be modified
-              </p>
-            )}
+              {orderData.orderStatus === "Delivered" && (
+                <p className="text-sm text-green-600 mt-1">
+                  Delivered orders cannot be modified
+                </p>
+              )}
+            </div>
+            <div>
+              {orderData.orderStatus==="Cancelled" && (
+                <div>
+                  Cancellation Reason
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+
       </div>
       {/* Customer Details Card */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
@@ -439,74 +586,11 @@ const AdminOrderDetails = () => {
       <div className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Order Items</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left">Product</th>
-                <th className="px-4 py-3 text-center">Quantity</th>
-                <th className="px-4 py-3 text-right">Price</th>
-                <th className="px-4 py-3 text-right">Total</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 text-center">Return Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {orderData.orderItems?.map((item) => (
-                <tr key={item._id}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center">
-                      <img
-                        src={item.productImage}
-                        alt={item.productName}
-                        className="w-12 h-12 object-cover rounded mr-3"
-                      />
-                      <span className="font-medium">{item.productName}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right">
-                    ₹{item.price?.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    ₹{item.totalPrice?.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm text-center w-full ${getStatusColor(
-                        item.orderStatus
-                      )}`}
-                    >
-                      {item.orderStatus}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {item.returnRequest &&
-                      getReturnRequestStatusBadge(item._id, item.returnRequest)}{/**######################################################## */}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-gray-50">
-              <tr>
-                <td colSpan="3" className="px-4 py-3 text-right font-semibold">
-                  Total Amount:
-                </td>
-                <td className="px-4 py-3 text-right font-semibold">
-                  ₹{orderData.orderedAmount?.toLocaleString()}
-                </td>
-                <td colSpan="2"></td>
-              </tr>
-              <tr>
-                <td colSpan="3" className="px-4 py-3 text-right font-semibold">
-                  Payable Amount:
-                </td>
-                <td className="px-4 py-3 text-right font-semibold">
-                  ₹{orderData.payableAmount?.toLocaleString()}
-                </td>
-                <td colSpan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
+
+          <ResponsiveOrderTable orderData={orderData} />
+
+
+
         </div>
       </div>
     </div>

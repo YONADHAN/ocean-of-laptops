@@ -12,15 +12,13 @@ const attachRequestInterceptor = (axiosCustomInstance) => {
 
       const token = Cookies.get("access_token");
 
-      console.log("Selected Token", token);
-      console.log(
-        "-----------------------------------------------------------------------2"
-      );
+     
+      
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      console.log(`Bearer ${token}`);
+     
 
       return config;
     },

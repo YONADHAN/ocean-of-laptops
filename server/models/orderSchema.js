@@ -16,10 +16,7 @@ const orderSchema = new mongoose.Schema({
         ref: "Product",
         required: true,
       },
-      // size: {
-      //   type: String,
-      //   required: true,
-      // },
+     
       productName:{
         type: String,
         required: true,
@@ -57,6 +54,9 @@ const orderSchema = new mongoose.Schema({
           "Return Rejected",
         ],
         default: "Pending",
+      },
+      cancellationReason: {
+        type: String,        
       },
       paymentStatus: {
         type: String,

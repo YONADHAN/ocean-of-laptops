@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {Minus, Plus, ChevronRight } from "lucide-react";
 import { FiHeart } from "react-icons/fi";
-import axios from "axios";
+
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import {
@@ -105,6 +105,11 @@ const ProductDetailPage = ({ productId }) => {
 
   const handleQuantityChange = async (action) => {
     try {
+      const token = Cookies.get('access_token');
+      if(!token){
+        navigate('/user/signin');
+        return
+      }
       const response = await axiosInstance.post("get_quantity", {
         productId: product._id,
       });
@@ -181,10 +186,11 @@ const ProductDetailPage = ({ productId }) => {
 
   const handleAddToCart = async () => {
     try {
-      // const response = await axiosInstance.post('/add_to_cart', {
-      //   productId: product._id,
-      //   quantity,
-      // });
+      const token = Cookies.get('access_token');
+      if(!token) {
+        navigate('/user/signin');
+        return;
+      }
       const productId = product._id;
       const response = await cartService.addToCart(productId, quantity);
 
@@ -232,8 +238,9 @@ const ProductDetailPage = ({ productId }) => {
    const getWishlistStatus = async () => {
       try {
         const token = Cookies.get("access_token");
-        if (!token) {
-          throw new Error("Authentication token not found");
+        if (!token) {         
+          return
+         // throw new Error("Authentication token not found");
         }
   
         const decoded = jwtDecode(token);
@@ -266,7 +273,9 @@ const ProductDetailPage = ({ productId }) => {
     try {
       const token = Cookies.get("access_token");
       if (!token) {
-        throw new Error("Authentication token not found");
+        navigate('/user/signin')
+        return
+        //throw new Error("Authentication token not found");
       }
 
       const decoded = jwtDecode(token);

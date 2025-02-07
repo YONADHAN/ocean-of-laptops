@@ -484,6 +484,46 @@ const get_cart_items = async(req,res) => {
 
 
 
+
+const searchProducts = async (req, res) => {
+  try {
+    const { term, brand, minPrice, maxPrice, category, status } = req.query;
+    
+    const query = {};
+    
+    // Search term matching
+    if (term) {
+      query.$or = [
+        { productName: { $regex: term, $options: 'i' } },
+        { brand: { $regex: term, $options: 'i' } },
+        { 'processor.model': { $regex: term, $options: 'i' } }
+      ];
+    }
+
+    // Additional filters
+    if (brand) query.brand = brand;
+    if (category) query.category = category;
+    if (status) query.status = status;
+    if (minPrice || maxPrice) {
+      query.salePrice = {};
+      if (minPrice) query.salePrice.$gte = Number(minPrice);
+      if (maxPrice) query.salePrice.$lte = Number(maxPrice);
+    }
+
+    const products = await Product.find(query)
+      .populate('category')
+      .select('-isBlocked')
+      .limit(10)
+      .sort({ createdAt: -1 });
+
+      res.json(Array.isArray(products) ? products : []);
+  } catch (error) {
+    res.status(500).json({ error: "Error searching products: " + error.message });
+  }
+}
+
+
+
 module.exports = {
   filter_products,
   get_product_details,
@@ -493,4 +533,5 @@ module.exports = {
   get_all_products_paginated,
   get_filter_options,
   get_cart_items,
+  searchProducts,
 };

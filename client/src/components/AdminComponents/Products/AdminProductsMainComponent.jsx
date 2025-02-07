@@ -9,6 +9,7 @@ import Table from "../../MainComponents/Table";
 import Pagination from "../../MainComponents/Pagination";
 import { toast } from "sonner";
 
+
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -206,14 +207,14 @@ const ProductList = () => {
       {columns.map((column, index) => (
         <div
           key={index}
-          className="hidden md:block p-3 ml-9 text-left font-medium"
+          className="hidden lg:block p-3 ml-9 text-left font-medium"
         >
           {column.label}
         </div>
       ))}
     </>
   );
-
+  
   const renderRow = (product) => {
     const renderContent = (key) => {
       switch (key) {
@@ -273,52 +274,51 @@ const ProductList = () => {
         case "offer":
           return (
             <div className="w-44 h-16 flex">
-            <div 
-              className="bg-green-200 text-green-800 flex items-center justify-center px-3 w-16 flex-col"
-              title="Click to change product offer"
-            >
-              {Math.max(product.offer, product.category.offer)}%
-              <p className="text-[10px]">Applied</p>
-            </div>
-            
-            <div className="flex flex-col flex-grow">
-              <button
-                onClick={() => handleOfferClick(product)}
-                className={`py-1 text-xs font-medium h-8 w-full ${
-                  product.offer === 0
-                    ? "bg-red-800 text-white hover:bg-red-700"
-                    : "bg-green-800 text-white hover:bg-green-700"
-                }`}
+              <div
+                className="bg-green-200 text-green-800 flex items-center justify-center px-3 w-16 flex-col"
                 title="Click to change product offer"
               >
-                {product.offer === 0
-                  ? "Add Offer"
-                  : `${product.offer}% Pro off`}
-              </button>
+                {Math.max(product.offer, product.category.offer)}%
+                <p className="text-[10px]">Applied</p>
+              </div>
               
-              <p
-                className="text-xs bg-gray-400 text-white px-2 py-1 h-8 w-full text-center cursor-pointer"
-                onDoubleClick={goToCategory}
-                title="Double click to navigate to category page"
-              >
-                {product.category.offer}% Cat off
-              </p>
+              <div className="flex flex-col flex-grow">
+                <button
+                  onClick={() => handleOfferClick(product)}
+                  className={`py-1 text-xs font-medium h-8 w-full ${
+                    product.offer === 0
+                      ? "bg-red-800 text-white hover:bg-red-700"
+                      : "bg-green-800 text-white hover:bg-green-700"
+                  }`}
+                  title="Click to change product offer"
+                >
+                  {product.offer === 0
+                    ? "Add Offer"
+                    : `${product.offer}% Pro off`}
+                </button>
+                
+                <p
+                  className="text-xs bg-gray-400 text-white px-2 py-1 h-8 w-full text-center cursor-pointer"
+                  onDoubleClick={goToCategory}
+                  title="Double click to navigate to category page"
+                >
+                  {product.category.offer}% Cat off
+                </p>
+              </div>
             </div>
-          </div>
-          
           );
         case "actions":
           return (
-            <div className="flex justify-center space-x-3">
+            <div className="flex flex-col lg:flex-row justify-center items-center space-x-3 space-y-2 lg:space-y-0">
               <button
                 onClick={() => handleEdit(product._id)}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-blue-600 hover:text-blue-800 whitespace-nowrap"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleBlock(product)}
-                className={`${
+                className={`whitespace-nowrap ${
                   product.isBlocked ? "text-green-600" : "text-red-600"
                 } hover:underline`}
               >
@@ -330,26 +330,30 @@ const ProductList = () => {
           return null;
       }
     };
-
+  
     return (
       <>
-        <div className="md:hidden col-span-6 space-y-4 p-4 border-b">
+        <div className="lg:hidden col-span-6 space-y-4  border-b">
           {columns.map((column) => (
-            <div key={column.key} className="flex justify-between items-start">
+            <div key={column.key} className="flex justify-between items-start w-full">
               <span className="font-medium text-gray-700">{column.label}:</span>
               <div className="text-right">{renderContent(column.key)}</div>
             </div>
           ))}
         </div>
-
+  
         {columns.map((column) => (
-          <div key={column.key} className="hidden md:block p-4">
+          <div key={column.key} className="hidden lg:block p-4">
             {renderContent(column.key)}
           </div>
         ))}
       </>
     );
   };
+
+
+
+
 
   if (loading && !searchTerm) {
     return (
@@ -387,7 +391,7 @@ const ProductList = () => {
         </Link>
       </div>
 
-      <div className="mb-4 relative">
+      <div className="mb-8 relative">
         <input
           type="text"
           placeholder="Search products..."

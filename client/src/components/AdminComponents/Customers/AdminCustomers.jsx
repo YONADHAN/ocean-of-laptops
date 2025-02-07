@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { axiosInstance } from "../../../api/axiosConfig";
-import {customerService } from "../../../apiServices/adminApiServices"
+import { customerService } from "../../../apiServices/adminApiServices"
 import { User } from "lucide-react";
 import Table from "../../MainComponents/Table";
 import Pagination from "../../MainComponents/Pagination";
@@ -26,25 +26,24 @@ function UserTable({ users, columns, onAction, loading }) {
         case "username":
           return (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full">
+              <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden flex items-center justify-center">
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full" />
+                  <img src={user.avatar} alt={user.username}  className="w-full h-full object-cover" />
+
                 ) : (
-                  <div className="flex justify-center py-1 text-gray-400">
-                    <User />
-                  </div>
+                  <User className="w-5 h-5 text-gray-400" />
                 )}
               </div>
               <span className="text-sm text-gray-900">{user.username}</span>
             </div>
           );
+
         case "email":
           return <div className="text-sm text-gray-600">{user.email}</div>;
         case "status":
           return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              user.isBlocked ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-            }`}>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.isBlocked ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+              }`}>
               {user.isBlocked ? "Blocked" : "Active"}
             </span>
           );
@@ -53,11 +52,10 @@ function UserTable({ users, columns, onAction, loading }) {
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => onAction(user, user.isBlocked ? "unblock" : "block")}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  user.isBlocked
+                className={`px-4 py-2 rounded-md transition-colors ${user.isBlocked
                     ? "border border-gray-300 hover:bg-gray-100"
                     : "bg-red-500 text-white hover:bg-red-600"
-                }`}>
+                  }`}>
                 {user.isBlocked ? "Unblock" : "Block"}
               </button>
             </div>
@@ -165,7 +163,7 @@ function UserManagement() {
     if (!selectedUser) return;
 
     try {
-    
+
 
       if (action === "block") {
         await customerService.blockCustomer(selectedUser._id);
@@ -173,7 +171,7 @@ function UserManagement() {
       } else if (action === "unblock") {
         await customerService.unblockCustomer(selectedUser._id);
         toast.success(`Customer unblocked successfully.`);
-      } 
+      }
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user._id === selectedUser._id
@@ -227,7 +225,7 @@ function UserManagement() {
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
           <div className="overflow-hidden">
-            <UserTable 
+            <UserTable
               users={users}
               columns={columns}
               onAction={confirmAction}

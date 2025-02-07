@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Table from "../../../components/MainComponents/Table";
+import Table from "../../MainComponents/Table";
 import ConfirmationAlert from "../../../components/MainComponents/ConformationAlert";
 import Pagination from "../../../components/MainComponents/Pagination";
 import { axiosInstance } from "../../../api/axiosConfig";
@@ -24,10 +24,10 @@ const AdminCouponTable = () => {
 
   const fetchCoupons = async (page) => {
     try {
-      const response = await axiosInstance.post(
-        "/admin/get_coupons_for_admin",
-        { page, limit }
-      );
+      const response = await axiosInstance.post("/admin/get_coupons_for_admin", {
+        page,
+        limit,
+      });
       setCoupons(response.data.coupons);
       setTotalPages(response.data.totalPages);
     } catch (error) {
@@ -45,11 +45,7 @@ const AdminCouponTable = () => {
       toast.error("Description is required");
       return false;
     }
-    if (
-      !data.discountPercentage ||
-      data.discountPercentage <= 0 ||
-      data.discountPercentage > 100
-    ) {
+    if (!data.discountPercentage || data.discountPercentage <= 0 || data.discountPercentage > 100) {
       toast.error("Discount percentage must be between 1 and 100");
       return false;
     }
@@ -62,6 +58,7 @@ const AdminCouponTable = () => {
     now.setHours(0, 0, 0, 0);
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
+    
     if (start < now) {
       toast.error("Start date cannot be in the past");
       return false;
@@ -96,6 +93,7 @@ const AdminCouponTable = () => {
     setFormData(data);
     setShowCouponEditAlert(true);
   };
+
   const handleEditConfirmSubmit = async () => {
     if (!formData) return;
     try {
@@ -169,6 +167,99 @@ const AdminCouponTable = () => {
     { label: "Actions", key: "actions" },
   ];
 
+  const renderHeader = (columns) => (
+    <>
+      {columns.map((column, index) => (
+        <div key={index} className="hidden md:block p-2 text-left font-medium">
+          {column.label}
+        </div>
+      ))}
+    </>
+  );
+
+  const renderRow = (coupon) => {
+    const renderContent = (key) => {
+      switch (key) {
+        case "couponCode":
+          return <div className="text-sm font-medium text-gray-900">{coupon.couponCode}</div>;
+        case "discountPercentage":
+          return <div className="text-sm text-gray-600">{coupon.discountPercentage}%</div>;
+        case "startDate":
+          return <div className="text-sm text-gray-600">
+            {new Date(coupon.startDate).toLocaleDateString()}
+          </div>;
+        case "endDate":
+          return <div className="text-sm text-gray-600">
+            {new Date(coupon.endDate).toLocaleDateString()}
+          </div>;
+        case "minPurchaseAmount":
+          return <div className="text-sm text-gray-600">₹{coupon.minPurchaseAmount}</div>;
+        case "maxDiscountPrice":
+          return <div className="text-sm text-gray-600">₹{coupon.maxDiscountPrice}</div>;
+        case "status":
+          return (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              coupon.status === "Active"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}>
+              {coupon.status}
+            </span>
+          );
+        case "actions":
+          return (
+            <div className="flex gap-2">
+              <button
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                onClick={() => handleEditCoupon(coupon)}
+              >
+                Edit
+              </button>
+              <button
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                onClick={() => {
+                  setSelectedCoupon(coupon);
+                  setShowAlert(true);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          );
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <>
+        {/* Mobile view */}
+        <div className="md:hidden space-y-4 p-5 border-b">
+          {columns.map((column) => (
+            <div 
+              key={column.key} 
+              className="flex justify-between items-center gap-6"
+            >
+              <span className="font-medium text-gray-700 text-sm min-w-[120px]">
+                {column.label}:
+              </span>
+              <div className="text-right text-gray-600 text-sm flex-shrink-0">
+                {renderContent(column.key)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop view */}
+        {columns.map((column) => (
+          <div key={column.key} className="hidden md:block p-2">
+            {renderContent(column.key)}
+          </div>
+        ))}
+      </>
+    );
+  };
+
   return (
     <div className="mt-4">
       <div className="flex justify-between mb-5">
@@ -197,38 +288,8 @@ const AdminCouponTable = () => {
       <Table
         columns={columns}
         rows={coupons}
-        renderRow={(coupon) => (
-          <>
-            <div className="p-2">{coupon.couponCode}</div>
-            <div className="p-2">{coupon.discountPercentage}%</div>
-            <div className="p-2">
-              {new Date(coupon.startDate).toLocaleDateString()}
-            </div>
-            <div className="p-2">
-              {new Date(coupon.endDate).toLocaleDateString()}
-            </div>
-            <div className="p-2">{coupon.minPurchaseAmount}</div>
-            <div className="p-2">{coupon.maxDiscountPrice}</div>
-            <div className="p-2">{coupon.status}</div>
-            <div className="p-2 flex gap-2">
-              <button
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => handleEditCoupon(coupon)}
-              >
-                Edit
-              </button>
-              <button
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                onClick={() => {
-                  setSelectedCoupon(coupon);
-                  setShowAlert(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </>
-        )}
+        renderHeader={renderHeader}
+        renderRow={renderRow}
       />
 
       <Pagination

@@ -203,7 +203,7 @@ const Checkout = () => {
 
   const handleModalClose = async () => {
     setModalVisible(false);
-    navigate("/user/home");
+    navigate("/");
   };
 
   const handlePlaceOrder = async () => {

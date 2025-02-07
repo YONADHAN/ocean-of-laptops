@@ -27,10 +27,10 @@ const verifyToken = (role) => {
         return res.status(400).json({ message: "Invalid role specified.", role });
       }
 
-      // console.log("__________from auth.js ********************************_______________token ********************************",token)
+      
      
       const decoded = jwt.verify(token, secretKey);
-      // console.log("decoded token from auth.js",decoded)
+      
       if(!decoded) {
         res.status(401).json({message:"Token is invalid or expired.", role })
       }
@@ -50,7 +50,7 @@ const verifyToken = (role) => {
 
       // Validate user existence
       const user = await User.findById(decoded._id);
-      // console.log(user," ",user.isBlocked)
+     
       if (!user) {
         return res.status(404).json({ message: "User not found.", role });
       }

@@ -33,7 +33,7 @@ const App = () => {
 
   const renderSearchBar = () => {
     return (
-      <div className="relative w-[400px] flex items-center border rounded-md focus-within:ring-2 focus-within:ring-blue-500">
+      <div className="relative flex items-center border rounded-md lg:w-[400px]">
         <input
           type="text"
           onChange={handleSearchChange}
@@ -42,19 +42,19 @@ const App = () => {
           placeholder="Search for products..."
         />
         <span className="bg-white p-3 rounded-r-md">
-          <FaSearch className="text-gray-800" />
+          <FaSearch className="text-gray-400" />
         </span>
       </div>
     );
   };
 
   const renderSortOptions = () => (
-    <div className="mb-0">
-      <label className="block text-sm font-medium mb-2">Sort By:</label>
+    <div className="mb-0 flex place-items-center gap-2 bg-gray-200 pl-2 ">
+      <label className="block text-md font-medium mb-2">Sort By:</label>
       <select
         value={sort}
         onChange={handleSortChange}
-        className="block w-[290px] p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="block  p-2 border border-none  focus:outline-none"
       >
         <option value="price:asc">Price: Low to High</option>
         <option value="price:desc">Price: High to Low</option>
@@ -93,3 +93,5 @@ const App = () => {
 };
 
 export default App;
+
+

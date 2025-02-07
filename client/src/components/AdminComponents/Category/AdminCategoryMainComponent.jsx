@@ -188,14 +188,14 @@ const CategoryPage = () => {
               onClick={() => handleOfferClick(category)}
               className={`px-2 py-1 rounded-lg text-xs font-medium ${
                 category.offer ? "bg-green-500" : "bg-red-500"
-              } text-white`}
+              } text-white `}
             >
               {category.offer ? `${category.offer}% Off` : "Add offer"}
             </button>
           );
         case "actions":
           return (
-            <div className="flex justify-center space-x-3 ">
+            <div className="flex place-items-center space-x-3  ">
               <button
                 onClick={() => handleEdit(category._id)}
                 className="text-blue-600 hover:text-blue-800 w-44"
@@ -221,7 +221,7 @@ const CategoryPage = () => {
 
     return (
       <>
-        <div className="md:hidden col-span-4 space-y-4 p-4 border-b">
+        <div className="md:hidden col-span-4 space-y-4 p-4 border-b w-[340px]">
           {columns.map((column) => (
             <div key={column.key} className="flex justify-between items-start">
               <span className="font-medium text-gray-700">{column.label}:</span>

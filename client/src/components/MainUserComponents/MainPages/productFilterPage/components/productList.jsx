@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import {axiosInstance} from '../../../../../api/axiosConfig';
 import {productService} from '../../../../../apiServices/userApiServices'
 import ProductCard from "../../../../UserComponents/products/productCardModel";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +13,7 @@ const ProductList = ({ filters, sort, searchQuery }) => {
   if (error) {
     return <div>{error}</div>;
   }
-  console.log("filter is : ",filters)
+  
   const fetchProducts = async () => {
     setIsLoading(true);
     setError(null);
@@ -49,7 +47,8 @@ const ProductList = ({ filters, sort, searchQuery }) => {
 
   const goToProductDetailsPage = (productId) => {
     window.scrollTo(0, 0);
-    navigate(`/user/product_detail/${productId}`);
+    //navigate(`/user/product_detail/${productId}`);
+    navigate(`/product_detail/${productId}`);
   };
 
   if (isLoading) {
@@ -64,7 +63,7 @@ const ProductList = ({ filters, sort, searchQuery }) => {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Product List</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ">
         {products.map((product) => (
           <ProductCard
             key={product._id}
