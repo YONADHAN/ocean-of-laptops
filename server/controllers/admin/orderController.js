@@ -7,7 +7,7 @@ const get_orders = async (req, res) => {
   try {
     const skip = (page - 1) * limit;
 
-    console.log(req.query);
+    //console.log(req.query);
     let query = Order.find();
 
     if (searchQuery && searchQuery.trim()) {
@@ -51,7 +51,7 @@ const get_orders = async (req, res) => {
 const  order_details_for_salesReport = async (req, res) => {
  
   const { searchQuery = "", startDate, endDate, filterPeriod} = req.body;
-  console.log("searchQuery", searchQuery, " startDate", startDate, " endDate", endDate, " filteredPeriod", filterPeriod)
+  //console.log("searchQuery", searchQuery, " startDate", startDate, " endDate", endDate, " filteredPeriod", filterPeriod)
   try {
     let query = {};
 
@@ -96,7 +96,7 @@ const  order_details_for_salesReport = async (req, res) => {
       };
     }
 
-    console.log("query is " + query)
+    //console.log("query is " + query)
 
     const orders = await Order.find(query).sort({placedAt: 1})
 
@@ -232,7 +232,7 @@ const order_details = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
-    console.log(order)
+    //console.log(order)
     res.status(200).json({ success: true, order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -430,7 +430,7 @@ const return_request_management = async (req, res) => {
     }
 
     res.status(200).json({ success: true, message: "Return request processed successfully" });
-    console.log("return request id is ", JSON.stringify(req.body));
+    //console.log("return request id is ", JSON.stringify(req.body));
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }

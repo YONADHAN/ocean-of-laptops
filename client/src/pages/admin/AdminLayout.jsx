@@ -21,10 +21,13 @@ const AdminLayout = () => {
 
   const handleLogout = async() => {
     try {
-      // const token = Cookies.get("admin_access_token");
+     
       const token = Cookies.get("access_token");
       if (!token) {
-        toast.error("Token not found");
+        //toast.error("Token not found");
+        Cookies.remove("RefreshToken");
+        Cookies.remove("access_token");
+        navigate('/admin/signin')
         return;
       }
   
@@ -32,6 +35,8 @@ const AdminLayout = () => {
    
       if (!decoded || !decoded._id) {
         toast.error("Invalid token");
+        Cookies.remove("RefreshToken");
+        Cookies.remove("access_token");
         return;
       }
   
@@ -47,13 +52,11 @@ const AdminLayout = () => {
       document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
       document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
   
-      // // Remove cookies
-      // Cookies.remove("userRefreshToken");
-      // Cookies.remove("user_access_token");
+     
 
       window.location.href = '/admin/signin';
       // // Navigate to sign-in page
-      // navigate("/admin/signin");
+       navigate("/admin/signin");
       console.log('Logging out...');
     } catch (error) {
       console.error(error);
@@ -89,7 +92,7 @@ const AdminLayout = () => {
         handleLogout={handleLogout}
         navItems={navItems}
       />
-      <main className="flex-grow pt-16 px-4 sm:px-6 lg:px-8 bg-gray-100 dark:bg-blue-800 transition-colors duration-200">
+      <main className="flex-grow pt-16 px-4 sm:px-6 lg:px-8 bg-gray-100 dark:bg-black/5 transition-colors duration-200">
         <div className="max-w-7xl mx-auto py-6">
           <Outlet />
         </div>

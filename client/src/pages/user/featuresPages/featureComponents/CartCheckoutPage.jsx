@@ -170,7 +170,7 @@ const Checkout = () => {
   };
 
   const handleAddressSelect = (address) => {
-    console.log("Address selected is " + address);
+    //console.log("Address selected is " + address);
     setSelectedAddress(address);
   };
 
@@ -283,6 +283,7 @@ const Checkout = () => {
             },
             handler: async function (response) {
               try {
+                
                 const verifyRes = await axiosInstance.post(
                   "/verify_razorpay_payment",
                   {
@@ -327,15 +328,16 @@ const Checkout = () => {
           rzp.on("payment.failed", async function (response) {
             orderData.razorpayPaymentId =  response.razorpay_payment_id
             orderData.paymentStatus = "Pending";
+            //console.log("orderData is : ",orderData)
             const finalOrder = await checkoutService.checkout(orderData);//-----------------------------------------added to successfully save the order
-            console.log(orderData)
+            //console.log(orderData)//-----------------------
             if (finalOrder.status === 200) {
               toast.success("Order placed successfully");
-              // navigate(`confirmation/${finalOrder.data.orderId}`);
+              //navigate(`confirmation/${finalOrder.data.orderId}`);
               clearCart();
             }
           
-            console.log("finalOrder placed successfully", finalOrder);
+            //console.log("finalOrder placed successfully", finalOrder);
             const orderId = finalOrder.data.orderId;
             const mongodbId = finalOrder.data.orderData._id;
             setOrderDetails({orderId,mongodbId});
@@ -353,7 +355,7 @@ const Checkout = () => {
         const finalOrder = await checkoutService.checkout(orderData);
         if (finalOrder.status === 200) {
           toast.success("Order placed successfully");
-          console.log("final order data: " + finalOrder);
+          //console.log("final order data: " + finalOrder);
           navigate(`confirmation/${finalOrder.data.orderId}`);
           clearCart();
         }
@@ -375,12 +377,7 @@ const Checkout = () => {
 
 
 
-  
-  // const orderDetails = {
-  //   orderId: "ORD12345",
-  //   itemName: "Example Product",
-  // };
-
+ 
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
@@ -657,7 +654,7 @@ const Checkout = () => {
 
               <div className="flex justify-between text-sm">
                 <span>Shipping Fee:</span>
-                <span>₹15.00</span>
+                <span>{cartData.netTotal?"₹15.00":"₹0.00"}</span>
               </div>
               {/* <div className="border-t pt-3 flex justify-between font-semibold">
                 <span>Total:</span>
@@ -671,11 +668,11 @@ const Checkout = () => {
               <div className="border-t pt-3 flex justify-between font-semibold">
                 <span>Total:</span>
                 <span>
-                  {indianCurrencyFormatter.format(
+                  {cartData.netTotal?indianCurrencyFormatter.format(
                     finalAmount > 0
                       ? (finalAmount + 15).toFixed(2)
                       : (cartData.netTotal + 15).toFixed(2)
-                  )}
+                  ):"₹00.00"}
                 </span>
               </div>
 

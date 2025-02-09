@@ -237,7 +237,7 @@ const get_filter_options = async (req, res) => {
 
 const filter_products = async (req, res) => {
   try {
-    console.log(req.query, "%%%%%%%%%%%%%%");
+   // console.log(req.query, "%%%%%%%%%%%%%%");
 
     
     const filter = { isBlocked: false };
@@ -429,7 +429,7 @@ const filter_products = async (req, res) => {
       };
     }
 
-    console.log("The entire filter is", JSON.stringify(filter, null, 2));
+    //console.log("The entire filter is", JSON.stringify(filter, null, 2));
 
     const sortOptions = {
       'price:asc': { regularPrice: 1 },

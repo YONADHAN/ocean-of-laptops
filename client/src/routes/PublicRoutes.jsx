@@ -15,7 +15,7 @@ const PublicRoutes = () => {
             <Route path='product_detail/:id' element={<ProductDetailPage/>}/>                   
             <Route path='shop' element={<Filter/>}/>              
             <Route path='collections' element={<CollectionPage/>}/>
-            <Route path="/about" element={<About />} />  
+            <Route path="about" element={<About />} />  
                                                       
       </Route>     
       <Route path="*" element={<Error404Page />} />

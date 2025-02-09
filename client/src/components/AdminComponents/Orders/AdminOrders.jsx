@@ -58,7 +58,7 @@ function OrderTable({ orders, columns, onViewDetails, loading }) {
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => onViewDetails(order.orderId)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+                className="px-4 py-2 bg-black/80 text-white rounded-md hover:bg-blue-600/15 hover:text-black transition-colors text-sm"
               >
                 View Details
               </button>
@@ -201,7 +201,7 @@ function OrderManagement() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl lg:text-3xl font-semibold text-blue-800">Order Management</h2>
+        <h2 className="text-2xl lg:text-3xl font-semibold text-black/80">Order Management</h2>
       </div>
 
       <div className="mb-4">
@@ -219,7 +219,7 @@ function OrderManagement() {
 
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="overflow-hidden border rounded-lg">
+          <div className="overflow-hidden border rounded-lg bg-white">
             <OrderTable 
               orders={orders}
               columns={columns}

@@ -130,7 +130,7 @@ const usePaymentHandler = (orderId) => {
       razorpayInstance.open();
 
       razorpayInstance.on("payment.failed", (response) => {
-        console.error("Payment failed:", response.error);
+        //console.error("Payment failed:", response.error);
         setModalState({
           isOpen: true,
           message: "Payment failed. Please try again.",
@@ -378,7 +378,7 @@ const OrderTrackingPage = () => {
   };
 
   const goToProductDetailPage = (productId) => {
-    navigate(`/user/product_detail/${productId}`);
+    navigate(`/product_detail/${productId}`);
   };
 
   const handleRetryPayment = async () => {

@@ -54,10 +54,10 @@ const Signin = () => {
         password,
       });
       if (response.status === 200) {
-        console.log(response.data);
+        // console.log(response.data);
         const { accessToken, message } = response.data;
-        console.log("user_access_token is :", accessToken);
-        console.log("Sign-in successful:", message);
+        // console.log("user_access_token is :", accessToken);
+        // console.log("Sign-in successful:", message);
         toast.success("Sign-in successful");
 
         Cookies.set("access_token", accessToken, {

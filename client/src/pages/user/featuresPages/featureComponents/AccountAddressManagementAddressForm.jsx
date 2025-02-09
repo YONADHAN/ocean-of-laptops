@@ -106,7 +106,7 @@ const ModernAddressForm = ({
     e.preventDefault();
     const isValid = validate(formData);
     if (!isValid) return;
-    console.log("form  submit formData : ", formData);
+    //console.log("form  submit formData : ", formData);
     onSubmit(formData);
   };
 

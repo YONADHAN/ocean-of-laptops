@@ -9,7 +9,7 @@ const Table = ({ columns, rows, renderHeader, renderRow }) => {
     <div className="table-container border rounded overflow-hidden">
       {/* Header */}
       <div
-        className={`header-row bg-gray-200 text-gray-900 font-medium grid`}
+        className={`header-row bg-blue-100 text-gray-900 font-medium grid`}
         style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
       >
         {renderHeader

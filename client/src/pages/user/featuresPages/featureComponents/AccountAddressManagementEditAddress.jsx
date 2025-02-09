@@ -34,7 +34,7 @@ const EditAddress = ({ redirectToCheckout = false, onSuccess, addressId }) => {
     try {  
       console.log("id", id)
       const response = await authService.fetchAddresses(id);
-      console.log("response", response)
+      //console.log("response", response)
       setAddress(response.data.address);
     } catch (error) {
       console.error('Error fetching address:', error);

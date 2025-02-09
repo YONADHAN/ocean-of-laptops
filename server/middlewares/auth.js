@@ -21,7 +21,7 @@ const verifyToken = (role) => {
       if (!token || token.split(".").length !== 3) {
         return res.status(400).json({ message: "Invalid token format." });
       }
-      console.log(role)
+      // console.log(role)
       const secretKey = SECRET_KEY[role];
       if (!secretKey) {
         return res.status(400).json({ message: "Invalid role specified.", role });

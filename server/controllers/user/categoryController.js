@@ -15,7 +15,7 @@ const get_category_id_from_name = async (req, res) => {
 };
 
 const get_category_list = async (req, res) => {
- console.log("categroy list fetched for a times")
+ //console.log("categroy list fetched for a times")
   try {
   
     const categories = await Category.find({ isBlocked: false }); 

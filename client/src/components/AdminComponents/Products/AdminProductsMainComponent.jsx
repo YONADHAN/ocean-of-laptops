@@ -312,7 +312,7 @@ const ProductList = () => {
             <div className="flex flex-col lg:flex-row justify-center items-center space-x-3 space-y-2 lg:space-y-0">
               <button
                 onClick={() => handleEdit(product._id)}
-                className="text-blue-600 hover:text-blue-800 whitespace-nowrap"
+                className="text-black/80 hover:text-blue-600 whitespace-nowrap"
               >
                 Edit
               </button>
@@ -382,10 +382,10 @@ const ProductList = () => {
   return (
     <div className="container mx-auto px-4 ">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-semibold text-blue-800">Products</h2>
+        <h2 className="text-3xl font-semibold text-black/80">Products</h2>
         <Link
           to="/admin/product_add"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-black/80 text-white rounded hover:bg-black transition-colors"
         >
           + Add New Product
         </Link>
@@ -408,7 +408,7 @@ const ProductList = () => {
 
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="overflow-hidden">
+          <div className="overflow-hidden bg-white">
             <Table
               columns={columns}
               rows={products}

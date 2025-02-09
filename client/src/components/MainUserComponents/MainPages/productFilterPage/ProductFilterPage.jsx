@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from "react";
 import ProductFilter from "./components/Filters";
-import ProductList from "./components/ProductList";
+import ProductList from "./components/productList";
 import { FaSearch } from "react-icons/fa";
 import { useDebounce } from "../../../../hooks/customDebounceHook"; 
 

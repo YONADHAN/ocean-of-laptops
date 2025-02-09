@@ -187,7 +187,7 @@ const CategoryPage = () => {
             <button
               onClick={() => handleOfferClick(category)}
               className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                category.offer ? "bg-green-500" : "bg-red-500"
+                category.offer ? "bg-green-500" : "bg-black/70"
               } text-white `}
             >
               {category.offer ? `${category.offer}% Off` : "Add offer"}
@@ -198,7 +198,7 @@ const CategoryPage = () => {
             <div className="flex place-items-center space-x-3  ">
               <button
                 onClick={() => handleEdit(category._id)}
-                className="text-blue-600 hover:text-blue-800 w-44"
+                className="text-black hover:text-blue-800 w-44"
               >
                 Edit
               </button>
@@ -266,17 +266,17 @@ const CategoryPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-semibold text-blue-800">Categories</h2>
+        <h2 className="text-3xl font-semibold text-black">Categories</h2>
         <button
           onClick={() => navigate("/admin/category_add")}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-black/80  text-white rounded hover:bg-blue-700 transition-colors"
         >
           + Create Category
         </button>
       </div>
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="overflow-hidden">
+          <div className="overflow-hidden bg-white">
             <Table
               columns={columns}
               rows={categories}

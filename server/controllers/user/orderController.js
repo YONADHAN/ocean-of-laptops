@@ -139,7 +139,7 @@ const cancel_order = async (req, res) => {
 
 const cancel_product = async (req, res) => {
   const { productId, orderId, quantity } = req.body;
-  console.log(productId, orderId, quantity, " product cancelled");
+  // console.log(productId, orderId, quantity, " product cancelled");
 
   try {
       
@@ -160,7 +160,7 @@ const cancel_product = async (req, res) => {
           return res.status(404).json({ success: false, message: "Product not found" });
       }
 
-      console.log("Original product quantity", product.quantity);
+      // console.log("Original product quantity", product.quantity);
      
       product.quantity += quantity;
       await product.save();

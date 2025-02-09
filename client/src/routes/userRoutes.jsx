@@ -135,7 +135,7 @@ const UserRoutes = () => {
                     <Route path='wallet' element={<Wallet/>}/>  
                     <Route path='coupon' element={<Coupon/>}/>
                     <Route path='contact_us' element={<Contact/>}/>   
-                    <Route path='settings' element={<Settings/>}/>                         
+                    {/* <Route path='settings' element={<Settings/>}/>                          */}
                 </Route>
                 <Route path="*" element={<Error404Page />} />
             </Routes>        

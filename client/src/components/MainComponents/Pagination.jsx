@@ -58,7 +58,7 @@ const Pagination = ({
 
   return (
     <div className="mt-4 flex items-center justify-between w-11/12 " >
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-black/80">
         Page {currentPage} of {totalPages}
       </span>
       
@@ -90,7 +90,7 @@ const Pagination = ({
               onClick={() => handlePageChange(pageNum)}
               className={`w-8 h-8 rounded-full ${
                 currentPage === pageNum
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-black text-white'
                   : 'hover:bg-blue-100'
               }`}
               aria-label={`Go to page ${pageNum}`}

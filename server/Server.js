@@ -34,10 +34,10 @@ cron.schedule("0 0 * * *", () => {
 });
 
 
-app.use("/", userRoute);
-app.use("/admin", adminRoute);
-app.use("/auth",authRoute);
-app.use("/public",publicRoute);
+app.use("/api/", userRoute);
+app.use("/api/admin", adminRoute);
+app.use("/api/auth",authRoute);
+app.use("/api/public",publicRoute);
 
 app.listen(3000, () => {
   console.log("Server started on port number 3000");

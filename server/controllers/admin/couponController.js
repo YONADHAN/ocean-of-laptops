@@ -38,7 +38,7 @@ const remove_coupon = async (req, res) => {
 };
 
 const get_coupons_for_admin = async (req, res) => {
-  console.log("get_coupons_for_admin");
+  //console.log("get_coupons_for_admin");
   try {
     const { page = 1, limit = 10, searchQuery = "" } = req.body;
     let filter = {};

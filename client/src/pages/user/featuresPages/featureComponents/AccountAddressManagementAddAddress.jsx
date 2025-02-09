@@ -23,7 +23,7 @@ const AddAddress = ({ redirectToCheckout = false, onSuccess }) => {
 
       if (response?.status === 200) {
         toast.success('Address added successfully');
-        console.log('Address added successfully');
+        //console.log('Address added successfully');
         if (onSuccess) onSuccess();
         navigate(redirectToCheckout ? '/user/features/cart/checkout' : '/user/features/account/addresses');
     }

@@ -15,7 +15,7 @@ const globalFieldUpdation = async (userId) => {
       "items.productId"
     );
     if (!cart) {
-      console.log("cart not found from globalfieldupdation");
+      //console.log("cart not found from globalfieldupdation");
       return "cart not found";
     }
 
@@ -25,7 +25,7 @@ const globalFieldUpdation = async (userId) => {
     let netTotal = 0; // Sales prices minus totalDiscount
 
     if (cart.items.length == 0) {
-      console.log("cart is empty from globalfieldupdation");
+      //console.log("cart is empty from globalfieldupdation");
       totalRegularPrice = 0;
       totalSalesPrice = 0;
       totalDiscount = 0;
@@ -59,7 +59,7 @@ const globalFieldUpdation = async (userId) => {
 };
 
 const checkingBlockedProduct = async (userId) => {
-  console.log("checkingBlockedProduct is worked with userId: " + userId);
+  //console.log("checkingBlockedProduct is worked with userId: " + userId);
 
   let cart = await Cart.findOne({ userId }).populate({
     path: "items.productId",
@@ -68,7 +68,7 @@ const checkingBlockedProduct = async (userId) => {
     },
   });
   if (!cart) {
-    console.log("cart not found from checkingBlockedProduct");
+    //console.log("cart not found from checkingBlockedProduct");
     return "cart not found";
   }
   const removedItems = [];
@@ -282,10 +282,10 @@ const add_to_cart = async (req, res) => {
     cart.finalTotal = updatedCartTotal - globalDiscount;
     cart.subTotal = updatedSubTotal;
 
-    console.log("Updated SubTotal:", updatedSubTotal);
-    console.log("Updated Cart Total:", updatedCartTotal);
-    console.log("Global Discount:", globalDiscount);
-    console.log("Final Total:", cart.finalTotal);
+    // console.log("Updated SubTotal:", updatedSubTotal);
+    // console.log("Updated Cart Total:", updatedCartTotal);
+    // console.log("Global Discount:", globalDiscount);
+    // console.log("Final Total:", cart.finalTotal);
 
     await cart.save();
     await globalFieldUpdation(userId);
@@ -569,10 +569,10 @@ const processCheckout = async (req, res) => {
       razorpayPaymentId = "NIL",
     } = req.body;
 
-    console.log("OrderData: ", JSON.stringify(req.body));
-    console.log("Payment method is : ", paymentMethod);
-    console.log("payment status is : ", paymentStatus);
-    console.log("Razor pay payment id is : ", razorpayPaymentId);
+    // console.log("OrderData: ", JSON.stringify(req.body));
+    // console.log("Payment method is : ", paymentMethod);
+    // console.log("payment status is : ", paymentStatus);
+    // console.log("Razor pay payment id is : ", razorpayPaymentId);
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies.user_access_token;
     if (!token) {
@@ -587,10 +587,10 @@ const processCheckout = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Order items are required" });
     }
-    console.log(
-      "payament status just before paymentStatusUpdated is : ",
-      paymentStatus
-    );
+    // console.log(
+    //   "payament status just before paymentStatusUpdated is : ",
+    //   paymentStatus
+    // );
     let paymentStatusUpdated = paymentStatus;
     if (paymentMethod === "Cash on Delivery") {
       paymentStatusUpdated = "Pending";
@@ -603,7 +603,7 @@ const processCheckout = async (req, res) => {
       }
       paymentStatusUpdated = paymentStatus;
     } else if (paymentMethod === "wallet") {
-      console.log("User i have got is : ", user);
+      // console.log("User i have got is : ", user);
       const wallet = await Wallet.findOne({ userId: user });
       if (!wallet) {
         return res
@@ -666,22 +666,22 @@ const processCheckout = async (req, res) => {
       await product.save();
     }
 
-    console.log("Final Order Data before saving:", {
-      user,
-      orderItems: processedItems,
-      orderedAmount,
-      totalAmount,
-      payableAmount: totalAmount,
-      shippingAddress,
-      orderStatus: "Pending",
-      paymentMethod,
-      paymentStatus: paymentStatusUpdated,
-      razorpayPaymentId, // ✅ Ensure this is not undefined
-      totalDiscount,
-      couponDiscount,
-      shippingFee,
-      deliveryBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
+    // console.log("Final Order Data before saving:", {
+    //   user,
+    //   orderItems: processedItems,
+    //   orderedAmount,
+    //   totalAmount,
+    //   payableAmount: totalAmount,
+    //   shippingAddress,
+    //   orderStatus: "Pending",
+    //   paymentMethod,
+    //   paymentStatus: paymentStatusUpdated,
+    //   razorpayPaymentId, // ✅ Ensure this is not undefined
+    //   totalDiscount,
+    //   couponDiscount,
+    //   shippingFee,
+    //   deliveryBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    // });
 
   
 
@@ -712,16 +712,16 @@ const processCheckout = async (req, res) => {
       deliveryBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    console.log(
-      "New order object before save:",
-      JSON.stringify(newOrder.toObject(), null, 2)
-    );
+    // console.log(
+    //   "New order object before save:",
+    //   JSON.stringify(newOrder.toObject(), null, 2)
+    // );
     
     const savedOrder = await newOrder.save();
-    console.log(
-      "Saved order object:",
-      JSON.stringify(savedOrder.toObject(), null, 2)
-    );
+    // console.log(
+    //   "Saved order object:",
+    //   JSON.stringify(savedOrder.toObject(), null, 2)
+    // );
 
     const result = await Cart.findOneAndDelete({ userId: user });
     if (result) {
@@ -757,13 +757,13 @@ const processCheckout = async (req, res) => {
 };
 
 const clear_cart = async (req, res) => {
-  console.log("clear cart is working....");
+  // console.log("clear cart is working....");
   try {
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies.user_access_token;
     const decoded = jwtDecode(token);
     const user = decoded._id;
-    console.log("user is now", user);
+    //console.log("user is now", user);
     const result = await Cart.findOneAndDelete({ userId: user });
     if (result) {
       console.log("Cart deleted successfully:", result);

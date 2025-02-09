@@ -209,7 +209,7 @@ function UserManagement() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-semibold text-blue-800">User Management</h2>
+        <h2 className="text-3xl font-semibold text-black">User Management</h2>
       </div>
 
       <div className="mb-4">
@@ -224,7 +224,7 @@ function UserManagement() {
 
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="overflow-hidden">
+          <div className="overflow-hidden bg-white">
             <UserTable
               users={users}
               columns={columns}

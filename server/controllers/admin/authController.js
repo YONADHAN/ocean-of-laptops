@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const nodemailer = require("nodemailer");
 const {generateAccessToken, generateRefreshToken} = require('../../utils/JWT/generateTokens')
 dotenv.config();
-const FRONTENT_URL = process.env.CLIENT_URL;
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 
@@ -31,7 +31,7 @@ const admin_signin = async (req,res) => {
 
     try {
         const {email,password}  = req.body;
-        console.log("email is -----------")
+        
         const user = await User.findOne({ email });
     
         if (!user) {
@@ -60,12 +60,12 @@ const admin_signin = async (req,res) => {
         }
 
         const accessToken = generateAccessToken("admin",adminDataToGenerateToken);
-        console.log("Access Token (signin) : ", accessToken);
+        //console.log("Access Token (signin) : ", accessToken);
         const refreshToken = generateRefreshToken(
           "admin",
           adminDataToGenerateToken
         );
-        console.log("Refresh Token (signin) : ", refreshToken);
+       
 
         await RefreshToken.deleteMany({ user_id: adminDataToGenerateToken._id });
 
@@ -106,7 +106,7 @@ const admin_signin = async (req,res) => {
 
 const  requestPasswordResetFromSignin = async (req, res) => {
   try {
-    console.log("Resetting password from signup...");
+    
   
     const { email } = req.body;
 

@@ -38,7 +38,7 @@ const ProductDetailPage = ({ productId }) => {
         }
 
         setProduct(response.data.productDetails);
-        console.log("Product details", response.data.productDetails);
+        //console.log("Product details", response.data.productDetails);
       } catch (err) {
         const status = err.response?.status;
         const errorMessage =

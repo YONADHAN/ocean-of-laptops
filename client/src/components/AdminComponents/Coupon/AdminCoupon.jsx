@@ -200,8 +200,8 @@ const AdminCouponTable = () => {
           return (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
               coupon.status === "Active"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-red-100 text-red-700 "
+                : "bg-green-100 text-green-700"
             }`}>
               {coupon.status}
             </span>
@@ -210,7 +210,7 @@ const AdminCouponTable = () => {
           return (
             <div className="flex gap-2">
               <button
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                className="px-3 py-1 bg-black/80 text-white rounded hover:bg-black text-sm"
                 onClick={() => handleEditCoupon(coupon)}
               >
                 Edit
@@ -262,10 +262,10 @@ const AdminCouponTable = () => {
 
   return (
     <div className="mt-4">
-      <div className="flex justify-between mb-5">
+      <div className="flex justify-between mb-5 ">
         <h2 className="text-lg font-bold mb-4">Admin Coupon Table</h2>
         <button
-          className="px-4 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+          className="px-4 py-1 bg-black/80 hover:bg-black text-white rounded-lg"
           onClick={() => {
             setSelectedCoupon(null);
             setFormData(null);
@@ -285,12 +285,14 @@ const AdminCouponTable = () => {
         isEditing={!!selectedCoupon}
       />
 
+      <div className="bg-white">
       <Table
         columns={columns}
         rows={coupons}
         renderHeader={renderHeader}
         renderRow={renderRow}
       />
+      </div>
 
       <Pagination
         currentPage={currentPage}

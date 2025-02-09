@@ -27,7 +27,10 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
     try {      
       const token = Cookies.get("access_token");
       if (!token) {
-        toast.error("Token not found");
+        //toast.error("Token not found");
+        Cookies.remove("RefreshToken");
+        Cookies.remove("access_token");
+        navigate('/user/signin')
         return;
       }
 
