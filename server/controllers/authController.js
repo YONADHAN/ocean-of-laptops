@@ -78,7 +78,7 @@ const refreshAccessToken = async (req, res) => {
     // Verify the refresh token
     const decoded = jwt.verify(refreshToken, refreshSecret);
 
-    console.log("Access Token Expiration:", process.env.JWT_ACCESS_TOKEN_EXPIRES);//for debugging
+    console.log("Access Token Expiration:", process.env.JWT_ACCESS_TOKEN_EXPIRES);
 
     // Generate a new access token
     const newAccessToken = jwt.sign(

@@ -92,7 +92,7 @@ const AdminSignin = () => {
         //   // path: '' 
         // });
         Cookies.set('access_token', accessToken, { 
-          expires:  1/96,
+          expires:  45/1440,
           secure: false, 
           sameSite: 'Strict', 
           // path: '' 

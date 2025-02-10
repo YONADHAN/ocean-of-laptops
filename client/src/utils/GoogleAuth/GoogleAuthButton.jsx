@@ -1,8 +1,8 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
 import { axiosInstance } from "../../api/axiosConfig";
-import Cookies from "js-cookie"; // Importing js-cookie for cookie management
-import { useNavigate } from "react-router-dom"; // Assuming you're using React Router
+import Cookies from "js-cookie"; 
+import { useNavigate } from "react-router-dom"; 
 
 const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
     const navigate = useNavigate(); // For redirection
@@ -17,16 +17,13 @@ const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
             if (res.status === 200) {
                 const { accessToken, message } = res.data;
 
-                console.log("Sign-in successful:", message);
-                console.log("User access token is:", accessToken);
-
-                // Display success toast message
+                
                 toast.success(message);
 
                
-                Cookies.set(`access_token`, accessToken, {//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%This is needed to be done%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    expires: 1/96, // Expires in 1 day
-                    secure: true, // Use `true` if serving over HTTPS
+                Cookies.set(`access_token`, accessToken, {
+                    expires: 45/1440, 
+                    secure: true, 
                     sameSite: "Strict",
                 });
 
