@@ -164,14 +164,14 @@ const get_applied_coupons = async (req, res) => {
 };
 
 const get_suitable_coupons = async (req, res) => {
-  console.log("get_suitable_coupons");
+  //console.log("get_suitable_coupons");
   try {
     const amount = req.body.amount;
     console.log(amount);
     const coupons = await Coupon.find({ minPurchaseAmount: { $lte: amount } });
-    if (coupons.length === 0) {
-      return res.status(404).json({ message: "No suitable coupons found" });
-    }
+    // if (coupons.length === 0) {
+    //   return res.status(404).json({ message: "No suitable coupons found" });
+    // }
     res.status(200).json({ message: "Suitable coupons", coupons });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error });

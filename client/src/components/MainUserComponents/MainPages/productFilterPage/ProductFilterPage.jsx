@@ -14,7 +14,7 @@ const App = () => {
  
   const debouncedSearch = useDebounce((value) => {
     setCurrentPage(1);
-    console.log("Search query submitted:", value);
+    //console.log("Search query submitted:", value);
   }, 800);
 
   const handleFilterChange = (newFilters) => {

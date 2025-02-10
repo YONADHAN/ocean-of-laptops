@@ -76,7 +76,7 @@ router.post('/refresh_cart',verifyUser, CartController.refresh_cart);
 //orders
 router.get("/order_history",verifyUser, OrderController.order_history);
 router.get("/get_order/:orderId",verifyUser, OrderController.get_order);
-router.get("/cancel_order/:orderId",verifyUser, OrderController.cancel_order);
+router.post("/cancel_order/:orderId",verifyUser, OrderController.cancel_order);
 router.post("/cancel_product",verifyUser, OrderController.cancel_product);
 router.post('/return_product',verifyUser, OrderController.return_product);
 router.post('/get_order_id',verifyUser, OrderController.get_order_id)

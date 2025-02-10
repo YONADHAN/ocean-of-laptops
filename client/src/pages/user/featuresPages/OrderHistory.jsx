@@ -23,7 +23,7 @@ const OrderHistory = () => {
       setTotalPages(Math.ceil(response.data.total / itemsPerPage));
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      //console.error("Error fetching orders:", error);
       setLoading(false);
     }
   };

@@ -488,13 +488,24 @@ const AdminOrderDetails = () => {
                 </p>
               )}
             </div>
-            <div>
-              {orderData.orderStatus==="Cancelled" && (
-                <div>
-                  Cancellation Reason
-                </div>
+
+            <div className="space-y-2 mt-8">
+              {orderData.orderItems.map((item, index) =>
+                item.cancellationReason ? (
+                  <div key={index} className="p-3 bg-gray-100 rounded-md shadow-sm mt-2 max-w-md mx-auto">
+                    <div className="flex flex-col justify-center items-center mb-1">
+                      <div className="font-medium text-base">Cancellation Reason for</div>
+                      <div className="text-blue-500 text-sm font-medium">{item.productName}</div>
+                    </div>
+                    <div className="p-3 text-xs text-center text-red-600">{item.cancellationReason}</div>
+                  </div>
+                ) : null
               )}
             </div>
+
+
+
+
           </div>
         </div>
 

@@ -23,21 +23,16 @@ const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
                 // Display success toast message
                 toast.success(message);
 
-                // Store access token in cookies (or localStorage if preferred)
-                // Cookies.set(`${role}_access_token`, accessToken, {//##################################This is to be removed #################################
-                //     expires: 1, // Expires in 1 day
-                //     secure: true, // Use `true` if serving over HTTPS
-                //     sameSite: "Strict",
-                // });
+               
                 Cookies.set(`access_token`, accessToken, {//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%This is needed to be done%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    expires: 1, // Expires in 1 day
+                    expires: 1/96, // Expires in 1 day
                     secure: true, // Use `true` if serving over HTTPS
                     sameSite: "Strict",
                 });
 
                 // Navigate to the user or admin home page based on role
                 if (role === "user") {
-                    navigate("/user/home");
+                    navigate("/");
                 } else if (role === "admin") {
                     navigate("/admin/dashboard");
                 }

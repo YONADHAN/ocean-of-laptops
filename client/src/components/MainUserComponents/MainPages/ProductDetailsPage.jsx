@@ -43,7 +43,7 @@ const ProductDetailedViewPage = () => {
           toast.error('An unexpected error occurred');
       }
       
-      console.error("Error fetching product details:", error);
+      //console.error("Error fetching product details:", error);
     }
   };
 

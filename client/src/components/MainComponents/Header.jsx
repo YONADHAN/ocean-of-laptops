@@ -50,8 +50,10 @@ const Header = ({ role, toggleSidebar, toggleTheme, isAuthenticated, userAvatar 
       // navigate("/admin/signin");
       console.log('Logging out...');
     } catch (error) {
-      console.error(error);
-      toast.error("Error in logout");
+      //console.error(error);
+      //toast.error("Error in logout");
+      window.location.reload();
+
     }
   };
 

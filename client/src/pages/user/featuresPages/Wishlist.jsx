@@ -32,8 +32,8 @@ const Wishlist = () => {
             setWishlist(response.data.wishlists);
             setTotalPages(Math.ceil(response.data.totalProducts / itemsPerPage));
         } catch (error) {
-            console.error(error.message);
-            toast.error(error.response?.message || "Something went wrong. Please try again.");
+            //console.error(error.message);
+            toast.info( "Add items to wishlist");
         } finally {
             setIsLoading(false);
         }
@@ -52,7 +52,7 @@ const Wishlist = () => {
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Error adding to cart");
-            console.error(error);
+            //console.error(error);
         }
     };
 
@@ -69,7 +69,7 @@ const Wishlist = () => {
             }
         } catch (error) {
             toast.error("Error while removing product");
-            console.error(error);
+            //console.error(error);
         }
     };
 

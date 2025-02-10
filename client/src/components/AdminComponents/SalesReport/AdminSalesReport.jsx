@@ -54,11 +54,11 @@ const SalesReport = () => {
         setData(response.data.orders);
         setTotalPages(response.data.pagination.totalPages);
         setMetrics(response.data.metrics);
-        toast.success("Orders fetched successfully.");
+        //toast.success("Orders fetched successfully.");
       }
     } catch (error) {
       toast.error("An error occurred while fetching data.");
-      console.error("Fetch Error:", error);
+      //console.error("Fetch Error:", error);
     } 
   };
 
@@ -76,11 +76,11 @@ const SalesReport = () => {
   
       if (response.status === 200) {
         setAllData(response.data.orders);
-        toast.success("Details of order for sales report fetched successfully.")
+        //toast.success("Details of order for sales report fetched successfully.")
       }
     } catch (error) {
       toast.error("An error occurred while fetching data.");
-      console.error("Fetch Error:", error);
+      //console.error("Fetch Error:", error);
     } finally {
       setIsLoading(false);
     }

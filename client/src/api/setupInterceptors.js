@@ -33,7 +33,7 @@ const attachResponseInterceptor = async (
   axiosCustomInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
-      console.error("Interceptor Error:", error);
+      //console.error("Interceptor Error:", error);
       const originalRequest = error.config;
 
       if (

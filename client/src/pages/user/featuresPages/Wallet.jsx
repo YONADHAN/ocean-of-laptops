@@ -317,8 +317,8 @@ const WalletComponent = () => {
       setTransactions(response.data.wallet.transactions)
       setTotalTransactions(response.data.totalTransactions)
     } catch (error) {
-      console.error("Error fetching wallet data:", error)
-      toast.error("Failed to fetch wallet data")
+      //console.error("Error fetching wallet data:", error)
+      toast.info("Nothing is there in the wallet")
     } finally {
       setIsLoading(false)
     }

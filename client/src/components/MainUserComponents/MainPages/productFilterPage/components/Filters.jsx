@@ -270,7 +270,7 @@ const ProductFilter = ({ onFilterChange }) => {
         const response = await productService.getFilterOptions();
         setFilterOptions(response.data);
       } catch (error) {
-        console.error("Error fetching filter options:", error);
+        //console.error("Error fetching filter options:", error);
       }
     };
     fetchFilterOptions();

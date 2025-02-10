@@ -209,7 +209,7 @@ export default function ShoppingCart() {
   const deliveryFee = 15;
 
   const goToProductDetailPage = (productId) => {
-    navigate(`/user/product_detail/${productId}`);
+    navigate(`/product_detail/${productId}`);
   };
 
   if (loading) {
@@ -313,7 +313,7 @@ export default function ShoppingCart() {
                   src={product.image}
                   alt={product.name}
                   onClick={() => goToProductDetailPage(product.id)}
-                  className="w-full md:w-48 h-48 object-cover rounded-md"
+                  className="w-full md:w-48 h-48 object-contain rounded-md"
                 />
               ) : (
                 <div className="relative">

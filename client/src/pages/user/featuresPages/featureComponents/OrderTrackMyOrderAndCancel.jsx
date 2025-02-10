@@ -110,7 +110,7 @@ const usePaymentHandler = (orderId) => {
             });
 
           } catch (err) {
-            console.error("Error verifying payment:", err);
+            //console.error("Error verifying payment:", err);
             setModalState({
               isOpen: true,
               message: "Error during payment verification.",
@@ -139,7 +139,7 @@ const usePaymentHandler = (orderId) => {
       });
 
     } catch (error) {
-      console.error("Error initializing Razorpay:", error);
+      //console.error("Error initializing Razorpay:", error);
       setModalState({
         isOpen: true,
         message: "Failed to initialize Razorpay. Please try again.",
@@ -155,7 +155,7 @@ const usePaymentHandler = (orderId) => {
 const handleDownloadInvoice = async (orderId) => {
   try {
     const response = await axiosInstance.get(`/get_tax_invoice/${orderId}`, {
-      responseType: 'arraybuffer',  // Important! This tells axios to handle binary data
+      responseType: 'arraybuffer',  
       headers: {
         'Accept': 'application/pdf'
       }
@@ -185,7 +185,7 @@ const handleDownloadInvoice = async (orderId) => {
 
     toast.success("Tax invoice downloaded successfully.");
   } catch (error) {
-    console.error("Error downloading invoice:", error);
+    //console.error("Error downloading invoice:", error);
 
     // Better error handling
     if (error.response) {
@@ -242,7 +242,7 @@ const OrderTrackingPage = () => {
 
   const handleProceed = async () => {
     try {
-      const response = await axiosInstance.get(`/cancel_order/${orderId}`);
+      const response = await axiosInstance.post(`/cancel_order/${orderId}`,{reason});
       if (response.status === 200) {
         toast.success("Order cancelled successfully");
         navigate("/user/features/order");
@@ -260,7 +260,8 @@ const OrderTrackingPage = () => {
       const response = await orderService.cancelProduct(
         orderId,
         productId,
-        quantity
+        quantity,
+        reason
       );
       if (response.status === 200) {
         toast.success("Product cancelled successfully");

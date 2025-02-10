@@ -21,7 +21,7 @@ const authService = {
   requestPasswordReset: (data) => axiosInstance.post('/request-password-reset', data),
   verifyEmailToken: (data) => axiosInstance.post('/verify-email', data),
   passwordChange: (data) => axiosInstance.post('/password-change', data),
-  fetchAddresses: (id) => axiosInstance.post(`/addresses${id}`),
+  fetchAddresses: (id) => axiosInstance.post(`/addresses/${id}`),
 
 };
 
@@ -60,8 +60,8 @@ const cartService = {
 const orderService = {
   getOrderHistory: (page,itemsPerPage) => axiosInstance.get( `/order_history?page=${page}&limit=${itemsPerPage}`),
   getOrder: (orderId) => axiosInstance.get(`/get_order/${orderId}`),
-  cancelOrder: (orderId) => axiosInstance.get(`/cancel_order/${orderId}`),
-  cancelProduct: (orderId,productId,quantity) => axiosInstance.post('/cancel_product', {orderId,productId,quantity}),
+  cancelOrder: (orderId, reason) => axiosInstance.post(`/cancel_order/${orderId}`,{reason}),
+  cancelProduct: (orderId,productId,quantity,reason) => axiosInstance.post('/cancel_product', {orderId,productId,quantity,reason}),
 };
 
 // CheckOutPage

@@ -18,7 +18,7 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <Router>
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-right" richColors toastOptions={{ style: { marginTop: '50px' } }}/>
         <Routes>         
           
           <Route path="/*" element={<PublicRoutes />} />

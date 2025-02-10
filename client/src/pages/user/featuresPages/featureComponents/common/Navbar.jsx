@@ -54,8 +54,9 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
   
       navigate("/user/signin");
     } catch (error) {
-      console.error(error);
-      toast.error("Error during logout");
+      //console.error(error);
+      //toast.error("Error during logout");
+      window.location.reload();
     }
   };
 
@@ -92,7 +93,7 @@ const ModernNavbar = ({ isDarkMode, toggleTheme, toggleSidebar }) => {
               <Menu size={24} />
             </button>
 
-            <a href="/user/home" className="ml-4 flex items-center space-x-2">
+            <a href="/" className="ml-4 flex items-center space-x-2">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? "bg-white" : "bg-blue-100"
                   }`}

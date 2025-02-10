@@ -118,7 +118,7 @@ const AdminSignin = () => {
 
   return (
     <div className={`min-h-screen flex justify-center ${isDarkMode ? "dark bg-gray-900" : "bg-gradient-to-b from-gray-100 to-gray-200"}`}>
-      <Toaster richColors position="top-right" />
+      {/* <Toaster richColors position="top-right" /> */}
       <div className="container mx-auto flex items-center justify-center px-16">
         <div className={`max-w-md mx-auto rounded-lg shadow-lg overflow-hidden ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
           <div className="p-8">

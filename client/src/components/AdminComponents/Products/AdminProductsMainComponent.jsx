@@ -222,7 +222,7 @@ const ProductList = () => {
           return (
             <div className="flex items-center">
               <img
-                className="h-10 w-10 rounded-full mr-2"
+                className="h-10 w-10  mr-2 object-contain"
                 src={product.productImage[0] || "/placeholder.svg"}
                 alt={product.productName}
               />

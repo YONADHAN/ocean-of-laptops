@@ -6,15 +6,12 @@ import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import AddressForm from './AccountAddressManagementAddressForm';
 
-const EditAddress = ({ redirectToCheckout = false, onSuccess, addressId }) => {
+const EditAddress = ({ redirectToCheckout = false, onSuccess, addressFromCheckout }) => {
+ 
   const navigate = useNavigate();
   let {id }= useParams();
-  if(redirectToCheckout && redirectToCheckout === true){
-    id = addressId;
-  }
-  // console.log("id", id)
-  // console.log(redirectToCheckout)
-  //const { id } = useParams();
+  
+  
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [address, setAddress] = useState(null);
@@ -23,28 +20,25 @@ const EditAddress = ({ redirectToCheckout = false, onSuccess, addressId }) => {
    
     if (location.state?.address) {
       setAddress(location.state.address);
+     
       setIsLoading(false);
     } else {
      
-      fetchAddress();
+     setAddress(addressFromCheckout)
+   
+     setIsLoading(false)
+     
     }
-  }, [id, location.state]);
+  }, [id, location.state, addressFromCheckout]);
 
-  const fetchAddress = async () => {
-    try {  
-      console.log("id", id)
-      const response = await authService.fetchAddresses(id);
-      //console.log("response", response)
-      setAddress(response.data.address);
-    } catch (error) {
-      console.error('Error fetching address:', error);
-      toast.error('Failed to load address details');
-     // navigate('/user/features/account/addresses');
-      navigate(redirectToCheckout ? '/user/features/cart/checkout' : '/user/features/account/addresses');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+  if(redirectToCheckout && redirectToCheckout === true){
+    id = addressFromCheckout._id;    
+  }
+
+
+
+
 
   const handleEditAddress = async (updatedAddress) => {
     try {
@@ -52,6 +46,7 @@ const EditAddress = ({ redirectToCheckout = false, onSuccess, addressId }) => {
       const token = Cookies.get('access_token');
       if (!token) {
         toast.error('Please login to continue');
+        
         return;
       }
    
@@ -63,7 +58,7 @@ const EditAddress = ({ redirectToCheckout = false, onSuccess, addressId }) => {
       if (onSuccess) onSuccess();
       navigate(redirectToCheckout ? '/user/features/cart/checkout' : '/user/features/account/addresses');
     } catch (error) {
-      console.error('Error updating address:', error);
+      //console.error('Error updating address:', error);
       toast.error(error.response?.data?.message || 'Failed to update address');
     }
   };

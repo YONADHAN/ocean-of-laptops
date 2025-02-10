@@ -74,7 +74,7 @@ const get_order = async (req, res) => {
 
 const cancel_order = async (req, res) => {
   const orderId = req.params.orderId;
-  
+  const reason = req.body.reason
   try {
       const order = await Order.findById(orderId);
       if (!order) {
@@ -87,6 +87,7 @@ const cancel_order = async (req, res) => {
      
       await Promise.all(order.orderItems.map(async (item) => {
           item.orderStatus = "Cancelled";
+          item.cancellationReason = reason;
           const product = await Product.findById(item.product);
           if (product) {
               product.quantity += item.quantity;
@@ -138,7 +139,7 @@ const cancel_order = async (req, res) => {
 };
 
 const cancel_product = async (req, res) => {
-  const { productId, orderId, quantity } = req.body;
+  const { productId, orderId, quantity, reason } = req.body;
   // console.log(productId, orderId, quantity, " product cancelled");
 
   try {
@@ -171,6 +172,7 @@ const cancel_product = async (req, res) => {
       order.orderItems.forEach(item => {
           if (item._id.toString() === productId) {
               item.orderStatus = "Cancelled";
+              item.cancellationReason = reason
               amountReduced += item.totalPrice
           }
           if (item.orderStatus !== "Cancelled") {
@@ -217,7 +219,7 @@ const cancel_product = async (req, res) => {
       res.status(200).json({ success: true, message: "Product cancelled successfully" });
 
   } catch (error) {
-      console.error("Error in cancel_product:", error);
+      //console.error("Error in cancel_product:", error);
       res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

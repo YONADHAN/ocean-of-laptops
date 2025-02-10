@@ -21,7 +21,7 @@ const CouponCard = ({ totalAmount = 0, onApplyCoupon, onClearCoupon }) => {
   useEffect(() => {
     const token = Cookies.get('access_token');
     if (!token) {
-      toast.error('Token not found');
+      //toast.error('Token not found');
       return;
     }
     const decoded = jwtDecode(token);
@@ -35,7 +35,7 @@ const CouponCard = ({ totalAmount = 0, onApplyCoupon, onClearCoupon }) => {
         setAvailableCoupons(response.data.coupons);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to fetch available coupons');
+      toast.info(error.response?.data?.message || 'Failed to fetch available coupons');
     }
   };
 
@@ -158,6 +158,17 @@ const CouponCard = ({ totalAmount = 0, onApplyCoupon, onClearCoupon }) => {
                 ))}
               </div>
             </div>
+          
+            {availableCoupons.length==0?
+            <div className='flex flex-col place-items-center text-green-600'>
+              <p className='text-black'>No Available Coupons Are Found For Your Order</p>
+              <img
+                className="w-24 h-24 mb-4"
+                src="https://static.vecteezy.com/system/resources/previews/023/518/224/non_2x/cartoon-sad-face-plaintive-look-unhappy-vector.jpg"
+                alt="Sad face"
+              />
+              Better luck next time 
+            </div>:""}
 
             <div className="p-4 border-t bg-gray-50">
               <button
