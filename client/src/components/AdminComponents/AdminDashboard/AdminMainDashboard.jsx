@@ -362,6 +362,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     const getReports = async () => {
       try {
+        if (new Date(startDate) > new Date(endDate)) {
+          toast.error("Start date cannot be after the end date.");
+          return;
+        }
         const response = await axiosInstance.post("/admin/dashboard", {
           startDate,
           endDate,

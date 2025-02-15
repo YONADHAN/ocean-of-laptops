@@ -38,6 +38,10 @@ const SalesReport = () => {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
+      if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        toast.error("Start date cannot be after the end date.");
+        return false;
+      }
 
       const payload = {
         page,
@@ -64,6 +68,12 @@ const SalesReport = () => {
 
   const fetchFullOrderDetails = async () => {
     try {
+      if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        toast.error("Start date cannot be after the end date.");
+        return false;
+      }
+
+     
          
       const payload = {     
         searchQuery,
