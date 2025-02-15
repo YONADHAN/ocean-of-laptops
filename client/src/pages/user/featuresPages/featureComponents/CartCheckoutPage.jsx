@@ -206,6 +206,31 @@ const Checkout = () => {
     navigate("/");
   };
 
+  const apply_coupon_ultimate = async () => {
+    try {
+      const token = Cookies.get("access_token");
+      if (!token) throw new Error("No access token found");
+  
+      const decoded = jwtDecode(token);
+      const response = await axiosInstance.post("/apply_coupon_ultimate", {
+        userId: decoded._id,
+        couponCode: appliedCouponCode,
+      });
+  
+      if (response.data.success) {
+        toast.success("Coupon applied successfully!");
+        setCouponDiscount(response.data.discountAmount || 0);
+      } else {
+        toast.error(response.data.message || "Failed to apply coupon");
+      }
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      toast.error(error.response?.data?.message || "Failed to apply coupon");
+      throw error; // Re-throw so `handlePlaceOrder()` can handle it
+    }
+  };
+  
+
   const handlePlaceOrder = async () => {
 
     try {
@@ -274,7 +299,7 @@ const Checkout = () => {
           const { data: razorpayOrder } = await axiosInstance.post(
             "/create_razorpay_order",
             {
-              amount: orderData.totalAmount,
+              amount: orderData.totalAmount+15,
             }
           );
 
@@ -306,6 +331,7 @@ const Checkout = () => {
                   const finalOrder = await checkoutService.checkout(orderData);
                   if (finalOrder.status === 200) {
                     toast.success("Order placed successfully");
+                    apply_coupon_ultimate();
                     navigate(`confirmation/${finalOrder.data.orderId}`);
                     clearCart();
                   }
@@ -340,6 +366,7 @@ const Checkout = () => {
             //console.log(orderData)//-----------------------
             if (finalOrder.status === 200) {
               toast.success("Order placed successfully");
+              apply_coupon_ultimate();
               //navigate(`confirmation/${finalOrder.data.orderId}`);
               clearCart();
             }
@@ -363,17 +390,25 @@ const Checkout = () => {
         if (finalOrder.status === 200) {
           toast.success("Order placed successfully");
           //console.log("final order data: " + finalOrder);
+          apply_coupon_ultimate();
           navigate(`confirmation/${finalOrder.data.orderId}`);
           clearCart();
         }
       }
 
-      try {
-        const coupon = await axiosInstance.post("/apply_coupon_ultimate", {
-          userId: decoded._id,
-          couponCode: appliedCouponCode,
-        });
-      } catch (error) { }
+
+      
+
+      // try {
+      //   const coupon = await axiosInstance.post("/apply_coupon_ultimate", {
+      //     userId: decoded._id,
+      //     couponCode: appliedCouponCode,
+      //   });
+      // } catch (error) { }
+
+
+
+
     } catch (error) {
       //console.error("Error placing order:", error);
       toast.error(error.response?.data?.message || "Failed to place order");
@@ -690,7 +725,7 @@ const editAddress = async(address) => {
                       </p>
                     </div>
                     <div >
-                      {method.id === "Cash on Delivery" && <div className="flex text-nowrap"> Available for amount less than ₹1000</div>}
+                      {method.id === "Cash on Delivery" && <div className="flex lg:text-nowrap text-wrap"> Available for amount less than: <p className="font-bold">₹1000</p></div>}
                       {method.id === "wallet" && <div className="flex text-nowrap"> Current Balance is :<div className="font-bold">{formatCurrency(walletBalance)}</div></div>}
                     </div>
                   </div>

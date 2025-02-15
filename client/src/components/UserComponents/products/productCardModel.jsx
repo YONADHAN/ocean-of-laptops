@@ -218,7 +218,7 @@
 
 //         <div className="flex items-center space-x-2 justify-between">
 //           <div>
-//             <span className="text-lg font-bold">₹{product.salePrice.toFixed(0)}</span>
+//             <span className="text-lg font-bold ">₹{product.salePrice.toFixed(0)}</span>
 //             {product.regularPrice > product.salePrice && (
 //               <span className="text-sm text-gray-500 line-through ml-2">
 //                 ₹{product.regularPrice.toFixed(0)}
@@ -450,7 +450,7 @@ const ProductCard = ({ product, onProductClick, fromLandingPage = false }) => {
 
         <div className="flex items-center space-x-2 justify-between">
           <div>
-            <span className="text-lg font-bold">₹{product.salePrice.toFixed(0)}</span>
+            <span className="text-lg font-bold ">₹{product.salePrice.toFixed(0)}</span>
             {product.regularPrice > product.salePrice && (
               <span className="text-sm text-gray-500 line-through ml-2">₹{product.regularPrice.toFixed(0)}</span>
             )}
@@ -458,8 +458,8 @@ const ProductCard = ({ product, onProductClick, fromLandingPage = false }) => {
         </div>
 
         <div className="flex justify-between gap-x-1 place-items-center">
-          <div className="flex gap-x-1 items-center">
-            <div className={`text-xl text-nowrap ${textColor}`}>{product.status}</div>
+          <div className="flex gap-x-1 items-center ">
+            <div className={` text-nowrap ${textColor} text-[.98rem]`}>{product.status}</div>
             <div>({product.quantity > 100 ? "100+" : product.quantity})</div>
           </div>
           <div className="flex gap-x-2 h-[40px] ">

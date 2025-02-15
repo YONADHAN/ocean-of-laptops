@@ -86,6 +86,7 @@ router.get('/get_tax_invoice/:orderId', verifyUser, downloadInvoiceController.do
 router.post('/create_razorpay_order', verifyUser, PaymentController.create_razorpay_order);
 router.post('/verify_razorpay_payment',verifyUser, PaymentController.verify_razorpay_payment);
 router.post('/retry_payment',verifyUser, PaymentController.retry_payment);
+router.post('/verify_retry_razorpay_payment',verifyUser, PaymentController.verify_retry_razorpay_payment)
 
 //wishlist
 router.post('/add_to_wishlist',verifyUser, WishlistController.add_to_wishlist);

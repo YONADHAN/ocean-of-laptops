@@ -95,7 +95,7 @@ const cancel_order = async (req, res) => {
           }
       }));
 
-      if (order.paymentMethod === "Razor pay") {
+      if ((order.paymentMethod === "Razor pay" ||order.paymentMethod === "wallet") && order.paymentStatus === "Completed") {
         const userId = order.user;
         let wallet = await Wallet.findOne({ userId });
       
@@ -107,23 +107,26 @@ const cancel_order = async (req, res) => {
           });
         }
               
-        wallet.balance += order.payableAmount;
+        wallet.balance += order.payableAmount+order.shippingFee;
       
         const transactionItem = {
           type: "credit",
-          amount: order.payableAmount,
+          amount: order.payableAmount+order.shippingFee,
           description: `Amount retrieved from cancelled order ${orderId}`,
           date: new Date(),
         };
       
         wallet.transactions.push(transactionItem);
         await wallet.save();
+         order.paymentStatus = "Refunded"
       }
       
-  
+      if(order.paymentMethod ==="Cash on Delivery"){
+        order.paymentStatus = "Cancelled";
+      }
 
       order.orderStatus = "Cancelled";
-      order.paymentStatus = "Cancelled";
+      
       order.payableAmount = 0;
       await order.save();
 
@@ -172,6 +175,9 @@ const cancel_product = async (req, res) => {
       order.orderItems.forEach(item => {
           if (item._id.toString() === productId) {
               item.orderStatus = "Cancelled";
+              if(order.paymentStatus === "Completed"){
+                item.paymentStatus = "Refunded";
+              }
               item.cancellationReason = reason
               amountReduced += item.totalPrice
           }
@@ -180,17 +186,19 @@ const cancel_product = async (req, res) => {
           }
       });
 
-      if (flag) {
+      if (flag ) {
           order.orderStatus = "Cancelled";
-          order.paymentStatus = "Cancelled";
+          if(order.paymentMethod === "Cash on Delivery"){
+            order.paymentStatus = "Cancelled";
+          }         
       }
       const noOfItems = order.orderItems.length;
       const averageCouponDiscount = Math.floor(order.couponDiscount / noOfItems);
     
       order.payableAmount-=(amountReduced - averageCouponDiscount);
-      let amountGetAddedToTheWallet = (amountReduced - averageCouponDiscount);
+      let amountGetAddedToTheWallet = (amountReduced - averageCouponDiscount)+(flag?order.shippingFee:0)
 
-      if (order.paymentMethod === "Razor pay") {
+      if ((order.paymentMethod === "Razor pay" || order.paymentMethod === "wallet" ) && order.paymentStatus === "Completed") {
         const userId = order.user;
         let wallet = await Wallet.findOne({ userId });
       
@@ -213,8 +221,11 @@ const cancel_product = async (req, res) => {
       
         wallet.transactions.push(transactionItem);
         await wallet.save();
+        if(flag ) {
+          order.paymentStatus = "Refunded";
+        }
       }   
-
+     
       await order.save();
       res.status(200).json({ success: true, message: "Product cancelled successfully" });
 

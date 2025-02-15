@@ -282,9 +282,9 @@ const order_status = async function (req, res) {
     order.orderStatus = status;
 
     if (order && order.orderStatus) {
-      if (order.orderStatus === "Cancelled") {
+      if (order.orderStatus === "Cancelled" && order.paymentMethod === "Cash on Delivery") {
         order.paymentStatus = "Cancelled";
-      } else if (order.orderStatus === "Delivered") {
+      } else if (order.orderStatus === "Delivered" && order.paymentMethod ==="Cash on Delivery") {
         order.paymentStatus = "Completed";
       }
     }
@@ -394,9 +394,7 @@ const return_request_management = async (req, res) => {
     item.returnRequest.requestStatus = decision === "accepted" ? "Approved" : "Rejected";
     item.returnRequest.reason = reason;
 
-    await order.save();
-
-    if (decision === "accepted") {
+    if (decision === "accepted" && order.paymentStatus === "Completed") {
       let amount = item.totalPrice;
       if (order.couponDiscount > 0) {
         amount = item.totalPrice - Math.round(order.couponDiscount / order.orderItems.length);
@@ -407,11 +405,11 @@ const return_request_management = async (req, res) => {
         return res.status(404).json({ success: false, message: "User wallet not found" });
       }
 
-      wallet.balance += amount;
+      wallet.balance += amount + order.shippingFee;
 
       const transactionItem = {
         type: "credit",
-        amount,
+        amount: amount + order.shippingFee,
         description: `Refund for ${item.productName}`,
         date: Date.now(),
       };
@@ -427,14 +425,24 @@ const return_request_management = async (req, res) => {
 
       // Save wallet and product simultaneously
       await Promise.all([wallet.save(), product.save()]);
+
+      item.paymentStatus = "Refunded";
     }
 
+    // **Check if all items are refunded, then mark order as refunded**
+    const allItemsRefunded = order.orderItems.every(i => i.paymentStatus === "Refunded");
+    if (allItemsRefunded) {
+      order.paymentStatus = "Refunded";
+    }
+
+    await order.save();
+
     res.status(200).json({ success: true, message: "Return request processed successfully" });
-    //console.log("return request id is ", JSON.stringify(req.body));
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
+
 
 
 module.exports = {

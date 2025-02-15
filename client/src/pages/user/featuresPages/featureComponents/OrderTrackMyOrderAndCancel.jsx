@@ -97,7 +97,7 @@ const usePaymentHandler = (orderId) => {
         retry: { enabled: false },
         handler: async (response) => {
           try {
-            const verifyRes = await axiosInstance.post("/verify_razorpay_payment", {
+            const verifyRes = await axiosInstance.post("/verify_retry_razorpay_payment", {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
@@ -854,7 +854,7 @@ const OrderTrackingPage = () => {
 
           <div className="bg-gray-50">
             <div className="container mx-auto p-4 md:p-6">
-              {order &&
+              {order && order.orderStatus != "Cancelled" &&
                 order.paymentStatus === "Pending" &&
                 order.paymentMethod === "Razor pay" && (
                   <div className="bg-red-50 p-4 rounded-lg">

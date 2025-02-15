@@ -47,7 +47,8 @@ const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
     };
 
     return (
-        <GoogleLogin
+       <div className="w-full">
+         <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleFailure}
             useOneTap
@@ -56,6 +57,7 @@ const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
             shape="rectangular"
             text="continue_with"            
         />
+       </div>
     );
 };
 

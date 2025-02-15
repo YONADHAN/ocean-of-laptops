@@ -51,19 +51,19 @@ function SimpleNavbar() {
           <div className="hidden md:flex items-center space-x-8">
          
             <a
-              href="/user/home"
+              href="/"
               className="font-medium text-white hover:text-teal-200 transition-colors"
             >
               Home
             </a>
             <a
-              href="/user/shop"
+              href="/shop"
               className="font-medium text-white hover:text-teal-200 transition-colors"
             >
               Shop
             </a>
             <a
-              href="/user/collections"
+              href="/collections"
               className="font-medium text-white hover:text-teal-200 transition-colors"
             >
               Collections

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 // import axios from 'axios';
 import { axiosInstance } from "../../../api/axiosConfig";
 import Cookies from "js-cookie";
@@ -9,13 +10,19 @@ import { authService } from "../../../apiServices/userApiServices";
 const Signin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if(!email.trim() && !password.trim()){
+      if (!email.trim() && !password.trim()) {
         toast.error("Email and password are required");
         return;
       }
@@ -40,8 +47,8 @@ const Signin = () => {
         toast.error("Password must be at least 8 characters long.");
         return;
       }
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?~`-])[A-Za-z0-9!@#$%^&*()_+=\[\]{};':"\\|,.<>/?~`-]{8,}$/;
+
       if (!passwordRegex.test(password)) {
         toast.error(
           "Password must include uppercase, lowercase, number, and special character."
@@ -61,7 +68,7 @@ const Signin = () => {
         toast.success("Sign-in successful");
 
         Cookies.set("access_token", accessToken, {
-          expires: 45/1440,
+          expires: 45 / 1440,
           secure: false,
           sameSite: "Strict",
           // path: ''
@@ -114,7 +121,7 @@ const Signin = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <label
                 className="block text-gray-700 font-bold mb-2"
                 htmlFor="password"
@@ -129,12 +136,36 @@ const Signin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+            </div> */}
+            <div className="mb-6 relative">
+              <label className="block text-gray-700 font-bold mb-2" htmlFor="password">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
+
+
             <div className="flex items-center justify-center mb-4">
               <div className="flex items-center"></div>
 
               <p
-                className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+                className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 hover:cursor-pointer"
                 onClick={forgetPasswordEmail}
               >
                 Forgot your password?
@@ -148,7 +179,9 @@ const Signin = () => {
             </button>
           </form>
 
-          <GoogleButton role="user" />
+          <div className=" flex justify-center">
+            <GoogleButton role="user" />
+          </div>
 
           <p className="text-gray-700 mt-4 text-center">
             Don’t have an account?{" "}

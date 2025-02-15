@@ -65,11 +65,11 @@ const retry_payment = async (req, res) => {
     }
 
     const razorpayOrder = await razorpayInstance.orders.create({
-      amount: order.payableAmount * 100,
+      amount: (order.payableAmount+order.shippingFee) * 100,
       currency: "INR",
       receipt: `retry_${orderId}`,
     });
-
+   
     order.razorpayPaymentId = razorpayOrder.id;
     await order.save();
 
@@ -80,8 +80,39 @@ const retry_payment = async (req, res) => {
   }
 };
 
+
+const verify_retry_razorpay_payment = async(req,res)=>{
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  const hmac = crypto
+    .createHmac("sha256", "HOQKojWqHdEsqLQZ7N5Km49i")
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest("hex");
+  if (hmac === razorpay_signature) {
+    //res.json({ success: true });
+    const order = await Order.findOne({ razorpayPaymentId: razorpay_order_id });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    order.paymentStatus = "Completed";
+    order.razorpayPaymentId = razorpay_payment_id;
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Payment verified and updated.",
+    });
+  } else {
+    res.status(400).json({ success: false, message: "Invalid signature" });
+  }
+}
+
 module.exports = {
   create_razorpay_order,
   verify_razorpay_payment,
   retry_payment,
+  verify_retry_razorpay_payment
 };

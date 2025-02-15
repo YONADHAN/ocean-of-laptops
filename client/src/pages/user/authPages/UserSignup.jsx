@@ -109,7 +109,7 @@ const Signup = () => {
     }
     
     // Check for password complexity
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?~`-])[A-Za-z0-9!@#$%^&*()_+=\[\]{};':"\\|,.<>/?~`-]{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       toast.error("Password must include uppercase, lowercase, number, and special character.");
       return false;
@@ -306,7 +306,9 @@ const Signup = () => {
               </div>
             </div>
            
+            <div className="w-full flex justify-center">
             <GoogleButton role="user" isDarkMode={false} />
+            </div>
             <p className="mt-6 text-center text-sm text-gray-600">
               Already have an account?{" "}
               <a

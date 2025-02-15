@@ -18,18 +18,18 @@ const AccountPrivacyAndSecurity = () => {
       description: "Get in touch with us with our easy process to reset password.",
       link: "/user/features/account/security/verify-email"
     },
-    {
-      icon: <UserMinusIcon className="w-8 h-8 text-red-500" />,
-      title: "Terminate Your Account",
-      description: "Permanently delete your account and all associated data.",
-      link: "/user/terminate_account"
-    },
-    {
-      icon: <ShieldExclamationIcon className="w-8 h-8 text-yellow-500" />,
-      title: "Report Security Issues",
-      description: "Help us improve by reporting any security concerns.",
-      link: "/user/complaint"
-    }
+    // {
+    //   icon: <UserMinusIcon className="w-8 h-8 text-red-500" />,
+    //   title: "Terminate Your Account",
+    //   description: "Permanently delete your account and all associated data.",
+    //   link: "/user/terminate_account"
+    // },
+    // {
+    //   icon: <ShieldExclamationIcon className="w-8 h-8 text-yellow-500" />,
+    //   title: "Report Security Issues",
+    //   description: "Help us improve by reporting any security concerns.",
+    //   link: "/user/complaint"
+    // }
   ];
 
   const SecurityCard = ({ icon, title, description, link }) => {

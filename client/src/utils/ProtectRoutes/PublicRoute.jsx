@@ -32,7 +32,7 @@
 //   }
 
 //   if (userRole === "user" && isUserRoute) {
-//     return <Navigate to="/user/home" replace />;
+//     return <Navigate to="/" replace />;
 //   }
 
 //   return children;
@@ -79,7 +79,7 @@ const PublicRoute = ({ children }) => {
   // }
 
   // if (userRole === "user" && isUserRoute) {
-  //   return <Navigate to="/user/home" replace />;
+  //   return <Navigate to="/" replace />;
   // }
 
   if (Role === "admin" ) {
@@ -87,7 +87,7 @@ const PublicRoute = ({ children }) => {
   }
 
   if (Role === "user" ) {
-    return <Navigate to="/user/home" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

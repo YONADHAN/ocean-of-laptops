@@ -89,7 +89,7 @@ function ModernNavbar() {
 
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <a href="/user/home" className="flex items-center">
+            <a href="/" className="flex items-center">
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
                   isDarkMode
@@ -235,7 +235,7 @@ function ModernNavbar() {
           <div className="flex flex-col space-y-6">
             {["Home", "Shop", "Collections", "About"].map((link) => (
               <a
-                href={`/user/${link.toLowerCase()}`}
+                href={`/${link.toLowerCase()}`}
                 key={link}
                 className="text-xl text-white hover:text-teal-200 transition-colors"
               >

@@ -9,10 +9,12 @@ const productSchema = new Schema(
     productName: {
       type: String,
       required: true,
+      index: true
     },
     brand: {
       type: String,
       required: true,
+      index: true
     },
     modelNumber: {
       type: String,
@@ -22,20 +24,24 @@ const productSchema = new Schema(
       brand: {
         type: String,
         required: true,
+        index: true
       },
       model: {
         type: String,
         required: true,
+        index: true
       },
       generation: {
         type: String,
         required: true,
+        index: true
       },
     },
     ram: {
       size: {
         type: String,
         required: true,
+        index: true
       },
       type: {
         type: String,
@@ -50,12 +56,14 @@ const productSchema = new Schema(
       capacity: {
         type: String,
         required: true,
+        index: true
       },
     },
     graphics: {
       model: {
         type: String,
         required: true,
+        index: true
       },
       vram: {
         type: String,
@@ -66,10 +74,12 @@ const productSchema = new Schema(
       size: {
         type: String,
         required: true,
+        index: true
       },
       resolution: {
         type: String,
         required: true,
+        index: true
       },
       refreshRate: {
         type: String,
@@ -79,14 +89,17 @@ const productSchema = new Schema(
     operatingSystem: {
       type: String,
       required: true,
+      index: true
     },
     batteryLife: {
       type: String,
       required: true,
+      
     },
     weight: {
       type: String,
       required: true,
+      
     },
     ports: {
       type: String,
@@ -98,6 +111,7 @@ const productSchema = new Schema(
     },
     salePrice: {
       type: Number,
+      index: true
     },
     quantity: {
       type: Number,
@@ -118,6 +132,7 @@ const productSchema = new Schema(
     color: {
       type: String,
       required: true,
+      index: true
     },
     productImage: {
       type: [String],

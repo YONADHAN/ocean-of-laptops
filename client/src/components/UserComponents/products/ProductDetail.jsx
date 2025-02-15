@@ -48,11 +48,11 @@ const ProductDetailPage = ({ productId }) => {
         switch (status) {
           case 403: // Forbidden
             toast.error(errorMessage || "Access forbidden");
-            navigate("/user/home");
+            navigate("/");
             break;
           case 404: // Not found
             toast.error("Product details not found");
-            navigate("/user/home");
+            navigate("/");
             break;
           case 400: // Bad request
             toast.error("Invalid product ID");
@@ -150,7 +150,7 @@ const ProductDetailPage = ({ productId }) => {
       toast.error(errorMessage);
 
       if (error.response?.status === 403) {
-        navigate("/user/home");
+        navigate("/");
       }
 
       console.error("Error handling quantity change:", error);
@@ -210,7 +210,7 @@ const ProductDetailPage = ({ productId }) => {
       switch (err.response?.status) {
         case 400:
           toast.error(errorMessage);
-          navigate("/user/home");
+          navigate("/");
           break;
         case 401:
           toast.error(
@@ -220,7 +220,7 @@ const ProductDetailPage = ({ productId }) => {
           break;
         case 404:
           toast.error("Product not found. It may have been removed.");
-          navigate("/user/home");
+          navigate("/");
           break;
         case 500:
           toast.error("Server error. Please try again later.");
@@ -323,7 +323,7 @@ const ProductDetailPage = ({ productId }) => {
           Home
         </a>
         <ChevronRight className="w-4 h-4" />
-        <a href="/user/shop" className="hover:text-primary">
+        <a href="/shop" className="hover:text-primary">
           Shop
         </a>
         <ChevronRight className="w-4 h-4" />

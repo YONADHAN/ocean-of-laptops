@@ -21,7 +21,7 @@ const ProductList = ({ filters, sort, searchQuery }) => {
     try {
       const [sortField, sortOrder] = sort.split(":");
       const params = { ...filters, page: currentPage, sort: sortField + ":" + sortOrder, searchQuery: searchQuery };
-
+      //console.log("params from frontend is ",JSON.stringify(params))
       // const response = await axiosInstance.get("/filter_products", { params });
       const response = await productService.filterProducts(params);
       const { products, totalPages } = response.data;

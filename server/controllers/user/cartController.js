@@ -8,6 +8,8 @@ const mongoose = require("mongoose");
 const { jwtDecode } = require("jwt-decode");
 const Cookies = require("js-cookie");
 
+const ShippingFee = 15;
+
 const globalFieldUpdation = async (userId) => {
   // console.log("globalfieldupdation is worked with userId: " + userId);
   try {
@@ -308,6 +310,15 @@ const add_to_cart = async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
+
+
+
+
+
+
+
+
+
 const cart_data = async (req, res) => {
   try {
     //console.log("cart_data endpoint called");
@@ -610,16 +621,16 @@ const processCheckout = async (req, res) => {
           .status(400)
           .json({ success: false, message: "No wallet found, create wallet" });
       }
-      if (wallet.balance < totalAmount) {
+      if (wallet.balance < totalAmount+shippingFee) {
         return res
           .status(400)
           .json({ success: false, message: "Insufficient balance in wallet" });
       }
-      wallet.balance -= totalAmount;
+      wallet.balance -= totalAmount+shippingFee;
 
       const transactionItem = {
         type: "debit",
-        amount: totalAmount,
+        amount: totalAmount+shippingFee,
         description: "Withdrawn from wallet",
         date: Date.now(),
       };

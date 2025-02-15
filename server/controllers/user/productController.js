@@ -237,7 +237,7 @@ const get_filter_options = async (req, res) => {
 
 const filter_products = async (req, res) => {
   try {
-   // console.log(req.query, "%%%%%%%%%%%%%%");
+   //console.log(req.query, "%%%%%%%%%%%%%%");
 
     
     const filter = { isBlocked: false };

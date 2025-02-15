@@ -108,6 +108,7 @@ export default function ShoppingCart() {
         const productId = id;
         await cartService.removeFromCart(userId, productId)
         setProducts(products.filter((product) => product.id !== id));
+        fetchCartData()
         toast.success("Item removed from cart");
         return;
       }
@@ -124,7 +125,7 @@ export default function ShoppingCart() {
       }
 
    
-       const productId = id;
+      const productId = id;
       const quantity = change
       await cartService.addToCart(productId, quantity);
       setProducts(
@@ -164,6 +165,7 @@ export default function ShoppingCart() {
       const productId = id;
       await cartService.removeFromCart(userId, productId);
       setProducts(products.filter((product) => product.id !== id));
+      fetchCartData();
       toast.success("Item removed from cart");
     } catch (error) {
       toast.error("Error removing item from cart");
@@ -431,24 +433,7 @@ export default function ShoppingCart() {
                 )}
               </span>
             </div>
-
-
-
-            {/* <div className="flex gap-2 mt-6">
-              <input
-                type="text"
-                placeholder="Add coupon code"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">
-                Apply
-              </button>
-            </div> */}
-
-
-
+      
             <button
               onClick={goToCheckOutPage}
               className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-gray-800 mt-6"

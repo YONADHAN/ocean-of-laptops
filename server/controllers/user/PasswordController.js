@@ -248,19 +248,100 @@ const forgotPasswordController = {
       const resetPasswordLink = `http://localhost:5173/user/reset_password_signin?token=${verificationToken}`;
 
       // Send verification email
+      // await transporter.sendMail({
+      //   from: process.env.NODEMAILER_EMAIL,
+      //   to: email,
+      //   subject: "Password Reset Request",
+      //   html: `
+      //     <h1>Password Reset Request</h1>
+      //     <p>We received a request to reset your password.</p>
+      //     <p>Click the link below to reset your password:</p>
+      //     <a href="${resetPasswordLink}" target="_blank">${resetPasswordLink}</a>
+      //     <p>This link will expire in 1 hour.</p>
+      //     <p>If you didn't request this, please ignore this email.</p>
+      //   `,
+      // });
+
       await transporter.sendMail({
         from: process.env.NODEMAILER_EMAIL,
         to: email,
-        subject: "Password Reset Request",
+        subject: "🔒 Password Reset Request",
         html: `
-          <h1>Password Reset Request</h1>
-          <p>We received a request to reset your password.</p>
-          <p>Click the link below to reset your password:</p>
-          <a href="${resetPasswordLink}" target="_blank">${resetPasswordLink}</a>
-          <p>This link will expire in 1 hour.</p>
-          <p>If you didn't request this, please ignore this email.</p>
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Password Reset Request</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+              }
+              .container {
+                max-width: 600px;
+                margin: 50px auto;
+                background: #ffffff;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+              }
+              .header {
+                text-align: center;
+                color: #333;
+                margin-bottom: 20px;
+              }
+              .content {
+                font-size: 16px;
+                color: #555;
+                line-height: 1.6;
+                margin-bottom: 20px;
+              }
+              .button {
+                display: inline-block;
+                width: 200px;
+                margin: 20px 0;
+                padding: 12px 20px;
+                text-align: center;
+                background-color: #007bff;
+                color: #ffffff;
+                text-decoration: none;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+              }
+            
+              .footer {
+                margin-top: 30px;
+                font-size: 14px;
+                text-align: center;
+                color: #777;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2 class="header">🔒 Password Reset Request</h2>
+              <p class="content">
+                We received a request to reset your password. If this was you, click the button below to reset it:
+              </p>
+              <div style="text-align: center;">
+                <a href="${resetPasswordLink}" class="button" target="_blank" rel="noopener noreferrer">Reset Password</a>
+              </div>
+              <p class="content">
+                This link will expire in <strong>1 hour</strong>. If you did not request this change, please ignore this email or contact our support team.
+              </p>
+              <p class="footer">
+                Need help? Contact us at <a href="mailto:yonadhanmm0@example.com">yonadhanmm0@example.com</a>
+              </p>
+            </div>
+          </body>
+          </html>
         `,
       });
+      
 
       res.status(200).json({
         success: true,

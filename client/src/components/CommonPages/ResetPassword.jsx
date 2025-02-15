@@ -23,6 +23,7 @@ const ResetPassword = ({linkFrom = "security",role = "user"}) => {
   }, [token]);
 
   const handleResetPassword = async (e) => {
+
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
@@ -30,18 +31,16 @@ const ResetPassword = ({linkFrom = "security",role = "user"}) => {
       setErrorMessage("Passwords do not match!");
       return;
     }
+   
 
     if (newPassword.length < 8) {
       toast.error("Password must be at least 8 characters long.");
       setErrorMessage("Password must be at least 8 characters long!");
       return;
     }
-
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?~`-])[A-Za-z0-9!@#$%^&*()_+=\[\]{};':"\\|,.<>/?~`-]{8,}$/;
     if (
-          !/[A-Z]/.test(newPassword) || 
-          !/[a-z]/.test(newPassword) || 
-          !/[0-9]/.test(newPassword) || 
-          !/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)
+         !passwordRegex.test(newPassword)
       ) {
           toast.error("Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.");
           return ;
@@ -114,7 +113,7 @@ const ResetPassword = ({linkFrom = "security",role = "user"}) => {
                 ? "Your password has been successfully reset."
                 : "Please enter your new password."}
             </p>
-            {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
+            {/* {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>} */}
             {successMessage && <div className="text-green-500 text-sm">{successMessage}</div>}
             {!successMessage && (
               <form onSubmit={handleResetPassword} className="space-y-4" noValidate>

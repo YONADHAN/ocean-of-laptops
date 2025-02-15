@@ -1,103 +1,224 @@
-const handlePlaceOrder = async () => {
-  if (paymentMethod === "Razor pay") {
-    try {
-      setLoading(true);
+const Product = require('../../models/productSchema');
 
-      if (!selectedAddress) {
-        toast.error("Please select a delivery address");
-        return;
-      }
+const filterOptions = async (req, res) => {
+  try {
+    const originalLink = [
+      "brand",
 
-      const token = Cookies.get("access_token");
-      const decoded = jwtDecode(token);
+      "processor.brand",
+      "processor.model",
+      "processor.generation",
+      "ram.size",
+      
+      "storage.type",
+      "storage.capacity",
+      "graphics.model",
 
-      // Fetch Razorpay order from backend
-      const response = await axiosInstance.post("/create-order", {
-        amount: finalAmount > 0 ? finalAmount : cartData.netTotal,
-      });
+      "display.size",
+      "display.resolution",
+     
+      "operatingSystem",
+      "batteryLife",
+      "weight", 
 
-      const { id: order_id, amount, currency } = response.data;
+      "size",
+      "color"
+    ];
 
-      const options = {
-        key: "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay key
-        amount: amount,
-        currency: currency,
-        name: "Your Shop Name",
-        description: "Order Payment",
-        order_id: order_id,
-        handler: async function (response) {
-          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
+    const label = [
+      "Brand",
 
-          // Verify payment on backend
-          const verifyResponse = await axiosInstance.post("/verify-payment", {
-            razorpay_payment_id,
-            razorpay_order_id,
-            razorpay_signature,
-          });
+      "Processor Brand",
+      "Processor Model",
+      "Processor Generation",
+      "RAM Size",
+      
+      "Storage Type",
+      "Storage Capacity",
+      "Graphics Model",
 
-          if (verifyResponse.data.success) {
-            toast.success("Payment successful! Placing your order...");
-            await placeOrder();
-          } else {
-            toast.error("Payment verification failed.");
-          }
-        },
-        prefill: {
-          name: decoded.name,
-          email: decoded.email,
-          contact: decoded.phone,
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
+      "Display Size",
+      "Display Resolution",
+     
+      "Operating System",
+      "Battery Life",
+      "Weight",  
 
-      const rzp = new Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Error with Razorpay payment:", error);
-      toast.error("Failed to process payment");
-    } finally {
-      setLoading(false);
-    }
-  } else {
-    // Handle other payment methods
-    await placeOrder();
+      "Size",
+      "Color"
+    ];
+
+
+    const distinctValues = await Promise.all(
+      originalLink.map(field => Product.distinct(field))
+    );
+
+
+    const grandMother = originalLink.map((field, index) => [
+      label[index],
+      field,
+      distinctValues[index]
+    ]);
+
+   
+
+    res.status(200).json({ success: true, message: "Filter is successfully fetched", fieldData: grandMother })
+  } catch (error) {
+    console.error(error);
   }
 };
 
-const placeOrder = async () => {
-  try {
-    const token = Cookies.get("access_token");
-    const decoded = jwtDecode(token);
 
-    const orderData = {
-      user: decoded._id,
-      orderItems: cart.items.map((item) => ({
-        product: item.productId,
-        productName: item.productName,
-        productImage: item.productImage,
-        quantity: item.quantity,
-        price: item.price,
-        totalPrice: item.totalPrice,
-        discount: item.discount || 0,
-      })),
-      shippingAddress: { ...selectedAddress },
-      paymentMethod,
-      paymentStatus: "Paid",
-      shippingFee: 15,
-      orderedAmount: finalAmount > 0 ? finalAmount + 15 : cartData.netTotal + 15,
-      totalDiscount: cartData.totalDiscount,
-      couponDiscount: couponDiscount || 0,
+
+
+
+// const gettingData = async (req, res) => {
+//   try {
+//     const query = req.body.finalQuery;
+//     const currentPage = req.body.currentPage;
+//     const limit = req.body.limit || 9;
+   
+//     const selectedOrder = query.orderChange;
+//     const selectedPriceRange = query.priceChange;
+//     const selectedCategories = query.selectedCategories;
+//     const selectedFields = Array.isArray(query.selectedFields) ? query.selectedFields : [];
+//     const searchTerm = query.searchTerm;
+
+//     const mongoQuery = { isBlocked: false };
+
+//     if (selectedCategories.length > 0) {
+//       mongoQuery["category"] = { $in: selectedCategories };
+//     }
+ 
+//     if (selectedPriceRange.length === 2) {
+//       mongoQuery["salePrice"] = { $gte: selectedPriceRange[0], $lte: selectedPriceRange[1] };
+//     }
+
+//     const orConditions = selectedFields.map(([_, key, values]) => {
+//       return { [key]: { $in: values } };
+//     });
+
+//     if (orConditions.length > 0) {
+//       mongoQuery["$or"] = orConditions;
+//     }
+
+//     const sortOptions = {
+//       "A to Z": { productName: 1 },
+//       "Z to A": { productName: -1 },
+//       "Price: Low to High": { regularPrice: 1 },
+//       "Price: High to Low": { regularPrice: -1 },
+//       "New Arrivals": { createdAt: -1 },
+//     };
+
+//     const sortQuery = sortOptions[selectedOrder] || { createdAt: -1 };
+
+//     console.log("MongoQuery ->", JSON.stringify(mongoQuery, null, 2));
+    
+//     // Fetch products with optimizations
+//     const products = await Product.find(mongoQuery).sort(sortQuery).lean();
+  
+//     console.log("Filtered Products Count:", products.length);
+  
+//     res.status(200).json({ success: true, products });
+
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// };
+const gettingData = async (req, res) => {
+  try {
+    const { finalQuery, currentPage, limit = 9 } = req.body;
+    const skip = (currentPage - 1) * limit;
+
+    const {
+      orderChange: selectedOrder,
+      priceChange: selectedPriceRange,
+      selectedCategories = [],
+      selectedFields = [],
+      searchTerm = ""
+    } = finalQuery;
+
+    console.log("------------------------------");
+
+    // Base query
+    const mongoQuery = { isBlocked: false };
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      mongoQuery["category"] = { $in: selectedCategories };
+    }
+
+    // Price range filter
+    if (selectedPriceRange.length === 2) {
+      mongoQuery["salePrice"] = {
+        $gte: selectedPriceRange[0],
+        $lte: selectedPriceRange[1]
+      };
+    }
+
+    // Selected fields filter (e.g., weight, color, etc.)
+    let orConditions = selectedFields.map(([_, key, values]) => ({
+      [key]: { $in: values }
+    }));
+
+    // Search filter - add to `$or` instead of overwriting it
+    if (searchTerm) {
+      orConditions.push(
+        { productName: { $regex: searchTerm, $options: 'i' } },
+        { description: { $regex: searchTerm, $options: 'i' } }
+      );
+    }
+
+    // Apply `$or` only if conditions exist
+    if (orConditions.length > 0) {
+      mongoQuery["$or"] = orConditions;
+    }
+
+    // Sorting options (using `salePrice` for sorting consistency)
+    const sortOptions = {
+      "A to Z": { productName: 1 },
+      "Z to A": { productName: -1 },
+      "Price Low to High": { salePrice: 1 },
+      "Price High to Low": { salePrice: -1 },
+      "New Arrivals": { createdAt: -1 }
     };
 
-    const response = await checkoutService.checkout(orderData);
-    if (response.status === 200) {
-      toast.success("Order placed successfully");
-      navigate(`/confirmation/${response.data.orderId}`);
-      clearCart();
-    }
+    const sortQuery = sortOptions[selectedOrder] || { createdAt: -1 };
+
+    console.log("Final MongoDB Query:", JSON.stringify(mongoQuery, null, 2));
+
+    // Get total count for pagination
+    const totalCount = await Product.countDocuments(mongoQuery);
+
+    // Fetch paginated products
+    const products = await Product.find(mongoQuery)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      products,
+      totalCount,
+      currentPage,
+      totalPages: Math.ceil(totalCount / limit)
+    });
+    console.log("The answer is ", totalCount)
+
   } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to place order");
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 };
+
+
+
+module.exports = {
+  filterOptions,
+  gettingData
+}
